@@ -23,10 +23,11 @@ BUDGETS = {'economy': (256, 36, 20), 'balanced': (384, 56, 30),
            'premium': (512, 80, 30)}
 
 class EmberRenderer:
-    def __init__(self, quality='balanced', backend=None):
+    def __init__(self, quality='balanced', backend=None, neon_strength=1.0):
         import moderngl
         self.quality=quality if quality in BUDGETS else 'balanced'
         self.size,self.steps,self.fps=BUDGETS[self.quality]
+        self.neon_strength=max(0.,min(2.,float(neon_strength)))
         kwargs={'require':330}
         if backend: kwargs['backend']=backend
         elif os.name=='posix' and not os.environ.get('DISPLAY'): kwargs['backend']='egl'
@@ -35,11 +36,20 @@ class EmberRenderer:
         try:
             self.program=self.ctx.program(vertex_shader=VERTEX,fragment_shader=shader.read_text())
             self.vao=self.ctx.vertex_array(self.program,[])
+            self.scene_texture=self.ctx.texture((self.size,self.size),components=4)
+            self.scene_texture.filter=(moderngl.LINEAR,moderngl.LINEAR)
+            self.scene_texture.repeat_x=False;self.scene_texture.repeat_y=False
+            self.volume_fbo=self.ctx.framebuffer(color_attachments=[self.scene_texture])
             self.fbo=self.ctx.simple_framebuffer((self.size,self.size),components=4)
+            self.bloom=self.ctx.program(vertex_shader=VERTEX,fragment_shader=shader.with_name('ember_bloom.frag').read_text())
+            self.bloom_vao=self.ctx.vertex_array(self.bloom,[])
+            self.bloom['scene'].value=0
+            self.bloom['resolution'].value=(self.size,self.size)
         except Exception:
             self.ctx.release()
             raise
         self.phase=0.0
+        self.cognition=0.0
         self._last=time.monotonic()
         self._values=[1.,.68,1.,.62,0.]
 
@@ -57,13 +67,21 @@ class EmberRenderer:
         self._values=[v+(target-v)*blend for v,target in zip(self._values,targets)]
         exp,turb,speed,intensity,level=self._values
         self.phase+=dt*speed
-        self.fbo.use();self.fbo.clear(0.,0.,0.,0.)
+        cognitive_target=1. if str(state).upper() in ('THINKING','PROCESSING') else 0.
+        self.cognition+=(cognitive_target-self.cognition)*blend
+        self.volume_fbo.use();self.volume_fbo.clear(0.,0.,0.,0.)
         for key,value in {'resolution':(self.size,self.size),'phase':self.phase,
                           'energy':level,'turbulence':turb,'expansion':exp,
                           'intensity':intensity,'quality_steps':self.steps}.items():
             self.program[key].value=value
         self.vao.render(vertices=3)
+        self.fbo.use();self.fbo.clear(0.,0.,0.,0.)
+        self.scene_texture.use(location=0)
+        self.bloom['neon_strength'].value=self.neon_strength
+        self.bloom['cognition'].value=self.cognition
+        self.bloom['phase'].value=self.phase
+        self.bloom_vao.render(vertices=3)
         return self.fbo.read(components=4,alignment=1)
 
     def close(self):
-        for obj in (self.fbo,self.vao,self.program,self.ctx): obj.release()
+        for obj in (self.fbo,self.volume_fbo,self.scene_texture,self.bloom_vao,self.bloom,self.vao,self.program,self.ctx): obj.release()

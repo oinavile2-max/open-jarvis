@@ -64,10 +64,10 @@ void main(){
         float heat=smoothstep(.40,.72,pockets+.13*(1.-radial));
         heat*=.65+.35*intensity;
         float vein=pow(max(0.,1.-abs(billow-.49)*4.2),7.);
-        vec3 ember=mix(vec3(.35,.009,.001),vec3(2.4,.19,.008),heat);
-        ember=mix(ember,vec3(4.3,1.1,.11),pow(heat,5.));
+        vec3 ember=mix(vec3(.48,.003,.025),vec3(3.4,.26,.012),heat);
+        ember=mix(ember,vec3(6.0,1.65,.20),pow(heat,5.));
         float inward=1.-smoothstep(.43,1.03,radial);
-        vec3 emission=ember*(heat*.8+vein*.85)*(.06+inward*2.2)*(1.+energy*.65);
+        vec3 emission=ember*(heat*.8+vein*.85)*(.06+inward*2.2)*(1.28+energy*.80);
         float light=clamp(.45+.5*q.y+.2*q.x,.1,1.);
         vec3 ash=mix(vec3(.10,.105,.12),vec3(.78,.77,.78),light);
         // Ash self-occlusion keeps hot pockets inside the smoke, not on a disc.

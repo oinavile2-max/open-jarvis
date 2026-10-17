@@ -40,3 +40,13 @@ Registro dos pedidos do usuário nesta conversa. Requisito não equivale a recur
 - Novo shader volumétrico original e ponte de renderização GPU separados do áudio.
 - Painel modular, clima e vínculo com as funções existentes em construção.
 - Preservar fontes e licenças da base; não publicar credenciais, configurações pessoais ou vídeos enviados pelo usuário.
+
+## Ajuste solicitado após a primeira prévia
+
+- Aumentar brilho interno e usar cores neon na esfera, mantendo a identidade de fogo e fumaça.
+- Implementação atual: emissão quente reforçada, sombras rubras/magenta e bloom derivado do volume; não um aro artificial.
+
+## Expressão visual de processamento
+
+- Mostrar fenômenos de conexões semelhantes a sinapses enquanto processa: pontos luminosos e impulsos rápidos, integrados ao fogo/fumaça.
+- Efeito ativado pelos estados THINKING/PROCESSING, com transição suave. É uma representação de estado, não uma medição da velocidade do raciocínio nem um cérebro real.
