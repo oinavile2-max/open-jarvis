@@ -1,0 +1,15 @@
+JARVIS GEMINI FREE — FIX 3
+
+Correção principal:
+- Mensagens digitadas agora ACORDAM o Jarvis automaticamente.
+- O modo SLEEPING continua bloqueando o microfone até wake word, mas não bloqueia mais o campo de texto.
+- Se a sessão Gemini Live não estiver conectada, o campo de texto usa a API Gemini REST como fallback.
+- Falhas de envio agora aparecem no Activity Log, em vez de falhar silenciosamente.
+
+Teste:
+1. Abra INICIAR_JARVIS.bat
+2. Mesmo que apareça SLEEPING, digite: Olá, responda apenas TESTE OK
+3. Pressione Enter.
+4. Deve aparecer "Typed command received — waking JARVIS" e depois a resposta.
+
+Para voz em modo wake-word, diga "Hey Jarvis" antes de falar, ou desative Wake Word nas configurações.

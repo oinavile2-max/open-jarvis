@@ -1,0 +1,57 @@
+ATENCAO: ESTA E A DESCRICAO HISTORICA DO RENDERIZADOR PROCEDURAL, QUE AGORA E FALLBACK.
+O modo preferencial e o video original. Leia GUIA_V22_ESFERA_E_FUNCOES_SEM_EXE.md.
+
+JARVIS WINDOWS — ESFERA VIVA (codigo-fonte, sem EXE)
+Data: 17/10/2026
+
+OBJETIVO
+Adaptar a esfera central ao video de referencia enviado pelo usuario:
+casca organica de filamentos cinza-fume, veios lava vermelho-laranja,
+movimento continuo com deformacao, pulsacao e rotacao, respondendo ao audio.
+
+ARQUIVOS ALTERADOS
+- core/living_orb.py (NOVO): geometria procedural 3D, deformacao fluida,
+  perfis por estado e tres niveis de detalhe. Sem dependencia de Qt no modelo.
+- ui.py: renderizacao da esfera por QPainter (camadas, veios, brilho, motes),
+  resposta ao audio existente, sincronizacao com estado, fallback se indisponivel,
+  persistencia correta da troca esfera/rosto animado.
+- config/ux.json: "face": "nebula"; "orb_quality": "balanced".
+- tests/test_living_orb.py (NOVO): testes de movimento, estados,
+  continuidade, repetibilidade e custo configuravel.
+
+FUNCIONALIDADES
+- Em espera: circulacao organica sem repeticao curta evidente.
+- Ouvindo: movimentacao/intensidade aumentadas e um detalhe de cor ciano.
+- Pensando: turbulencia e velocidade intensificadas, detalhe violeta.
+- Falando: pulsacao responde a amplitude real recebida pelo HUD.
+- Microfone mudo: intensidade suavizada sem interromper o movimento.
+- Pausa da janela: a GUI ja evita repaint quando minimizada/invisivel.
+- Qualidade em config/ux.json: economy / balanced / premium.
+- Video nao e reproduzido em loop: a animacao e gerada em tempo real.
+- API de audio e conversa existentes foram preservadas, inclusive
+  correcoes de latencia do pacote V22 anterior.
+
+LIMITACOES E VALIDACAO
+- Sintaxe do codigo e testes isolados podem ser verificados sem Windows.
+- Dependencia PyQt6 nao esta presente neste ambiente, e a instalacao externa
+  nao estava acessivel: nao houve teste grafico QPainter nem teste real no PC.
+- A fidelidade visual exata ao clipe exige comparacao e calibragem na maquina.
+- Nao e apropriado chamar o resultado de 'identico' ou 'pronto comercialmente'
+  sem captura de tela, medicao de FPS/CPU e testes reais com voz.
+- Nenhum EXE, instalador ou APK foi gerado.
+
+COMO USAR APOS TESTAR NO PC
+1. Descompacte em pasta nova, sem sobrescrever seu projeto atual.
+2. Instale as dependencias usando seu fluxo existente apenas se necessario.
+3. Execute INICIAR_JARVIS.bat (nao e compilacao).
+4. Para reduzir carga em PC lento, no config/ux.json altere:
+   "orb_quality": "economy". Para mais detalhes: "premium".
+5. Verifique a esfera nos estados ouvindo, pensando e respondendo.
+6. Se o sistema real nao tiver PyQt6, o app nao abre — isso ja e uma
+   dependencia da versao V22 original, nao desta alteracao.
+
+OUTRAS MELHORIAS DISCUTIDAS
+- Volume individual, cards funcionais/black-glass, multimidia, autonomia,
+  inicio no Windows, pesquisa conversacional e convivio familiar sao
+  frentes distintas e nao foram declaradas concluidas neste pacote.
+- Nao habilitar escuta ambiental continua sem consentimento da familia.

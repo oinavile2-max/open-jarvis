@@ -1,0 +1,23 @@
+JARVIS BR PREMIUM V22 — CORREÇÃO DEFINITIVA DO ERRO DE COMPILAÇÃO
+
+CAUSA RAIZ
+O winsdk voltou a aparecer porque novas versões do projeto foram derivadas de
+uma base antiga cujo requirements.txt ainda continha winsdk>=1.0.0b10.
+O computador do teste usa Python 3.14; nesse ambiente o pip pode tentar
+compilar winsdk localmente ("Building wheel for winsdk"), causando demora ou falha.
+
+CORREÇÃO PERMANENTE
+1. winsdk removido de requirements.txt.
+2. winsdk removido de requirements-build.txt.
+3. localização precisa isolada em requirements-optional-windows.txt.
+4. build passa a usar .venv-build própria.
+5. .venv-build aceita somente Python 3.12 ou 3.11.
+6. Python 3.14 do usuário não é mais usado para empacotar o JARVIS.
+7. VALIDAR_DEPENDENCIAS_BUILD.py bloqueia qualquer reintrodução de winsdk nas
+   dependências obrigatórias antes de uma compilação.
+8. localização precisa opcional usa outra venv e nunca contamina a venv do build.
+9. o JARVIS continua com fallback de localização aproximada/manual sem winsdk.
+
+IMPORTANTE
+Nenhum build/EXE foi gerado nesta V22.
+Apenas código-fonte e infraestrutura de compilação foram corrigidos.

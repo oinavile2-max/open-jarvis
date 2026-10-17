@@ -1,0 +1,20 @@
+JARVIS BR PREMIUM V5 — RESPOSTA IMEDIATA
+
+Esta versão muda a lógica de escuta, não apenas o tempo do Gemini.
+
+O QUE MUDOU:
+- JARVIS identifica quando sua voz realmente começou.
+- Após você parar de falar, espera somente ~280 ms.
+- Depois disso FECHA LOCALMENTE o envio do microfone.
+- O microfone só é reaberto quando a resposta termina.
+- Ruído abaixo do limite não é enviado enquanto você ainda não começou a falar.
+- Noise gate mais forte para ventilador, teclado e ruído ambiente.
+- Detector do Gemini reduzido para ~180 ms.
+- Watchdog de 4 s evita o microfone ficar travado se houver erro de rede.
+
+OBJETIVO:
+Você fala -> para de falar -> em aproximadamente 0,28 s muda para PROCESSANDO.
+
+Se sua voz for muito baixa e não ativar:
+fale um pouco mais perto do microfone. A sensibilidade pode ser ajustada depois
+pela tela de Configurações.

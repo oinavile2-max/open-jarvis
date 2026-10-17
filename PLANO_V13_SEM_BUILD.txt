@@ -1,0 +1,18 @@
+JARVIS BR PREMIUM V13 — SOMENTE CÓDIGO-FONTE
+
+REGRA RESPEITADA:
+NENHUM BUILD/EXE FOI GERADO.
+
+TRABALHO NO FONTE:
+- Localização com Windows preciso, fallback aproximado e cidade manual.
+- Tela de teste de localização.
+- Detector local para acordar com 1 palma.
+- Detector para acordar ao ouvir "Jarvis".
+- Cores neon diferentes por estado.
+- Estrutura para 4 caras: Partículas, Reator, Orbe Neural e Minimalista.
+- Cartões contextuais refeitos em janela própria sobre o wallpaper.
+- Configuração amigável em CONFIGURAR_RECURSOS.bat.
+
+VALIDAÇÃO AINDA NECESSÁRIA NO PC:
+A palma e a palavra "Jarvis" precisam ser calibradas no microfone real durante
+os testes, porque sensibilidade e ruído variam por hardware.

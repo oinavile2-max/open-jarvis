@@ -1,0 +1,48 @@
+JARVIS BR PREMIUM V6 — CASA INTELIGENTE
+
+INTEGRAÇÕES INCLUÍDAS
+
+1) HOME ASSISTANT
+   - Descobre entidades automaticamente.
+   - Liga/desliga/toggle.
+   - Ajusta brilho.
+   - Ajusta temperatura.
+   - Ativa cenas.
+   - Consulta estado.
+
+2) eWeLink CUBE / iHost
+   - Usa a Open API V2 local oficial.
+   - Lista dispositivos.
+   - Liga/desliga.
+   - Ajusta brilho quando a capacidade existir.
+   - Consulta estado.
+
+   IMPORTANTE:
+   O eWeLink Cloud comum exige OAuth/aplicativo de desenvolvedor. Se seus
+   dispositivos eWeLink estão apenas na nuvem, a opção mais simples é
+   adicioná-los ao Home Assistant e deixar o JARVIS controlá-los por ele.
+
+3) SMART LIFE / TUYA
+   - Controle LOCAL por tinytuya.
+   - Liga/desliga.
+   - Estado.
+   - Brilho para lâmpadas compatíveis.
+
+COMO CONFIGURAR
+1. Rode INSTALAR.bat (se ainda não rodou nesta pasta).
+2. Abra CONFIGURAR_CASA_INTELIGENTE.bat.
+3. Configure um ou mais provedores.
+4. Teste a conexão.
+5. Salve.
+6. Abra INICIAR_JARVIS.bat.
+
+EXEMPLOS DE VOZ
+- "Jarvis, ligue a luz da sala."
+- "Apague a luz do quarto."
+- "Deixe a luz da sala em 30 por cento."
+- "Coloque o ar em 23 graus."
+- "Ative a cena cinema."
+- "Quais dispositivos da casa estão disponíveis?"
+
+SEGURANÇA
+Fechaduras, portões/garagens e desarme de alarme ficam bloqueados neste módulo.

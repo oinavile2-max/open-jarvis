@@ -1,0 +1,30 @@
+JARVIS BR PREMIUM V3
+====================
+
+Esta versão reconstrói a interface e a base de personalização.
+
+PRINCIPAIS MUDANÇAS
+- HUD azul/ciano premium, inspirado na referência futurista enviada.
+- Núcleo holográfico central reativo aos estados OUVINDO / PENSANDO / RESPONDENDO.
+- Painéis laterais reorganizados: estado, sistema, áudio, perfil, contexto local e comandos rápidos.
+- Interface e prompt em português do Brasil.
+- Perfis separados por usuário. Cada perfil passa a ter seu próprio long_term.json e espelho Obsidian.
+- Localização opcional pelo serviço de Localização do Windows. Nada é enviado a um serviço externo para descobrir a posição.
+- Clima pode usar as coordenadas do Windows quando uma cidade não for informada.
+- Latência ajustada: detecção de fim de fala fica mais rápida por padrão (420 ms).
+- Persona vocal ajustada para uma presença masculina, calma, elegante e cinematográfica, sem imitar uma pessoa real.
+
+COMO TESTAR
+1. Extraia a pasta inteira.
+2. Se ainda não instalou as dependências, execute INSTALAR.bat.
+3. Configure a chave gratuita pelo CONFIGURAR_GEMINI_GRATIS.bat.
+4. Execute INICIAR_JARVIS.bat.
+5. Clique no perfil no topo para criar/trocar usuário. Ao trocar o perfil, reinicie o Jarvis para carregar a memória isolada desse usuário.
+
+LOCALIZAÇÃO
+- Windows: Configurações > Privacidade e segurança > Localização > Serviços de localização.
+- A localização é opcional. Se o Windows não fornecer posição, o Jarvis continua funcionando normalmente.
+
+MICROFONE
+- Para reduzir ativações por barulho, use Wake Word quando o pacote openwakeword estiver instalado, ou Push-to-talk nas configurações.
+- A V3 também usa encerramento de fala mais rápido para diminuir o atraso antes da resposta.

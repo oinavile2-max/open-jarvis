@@ -1,0 +1,28 @@
+JARVIS BR PREMIUM V10 — WALLPAPER FIX 1
+
+CORREÇÃO PRINCIPAL
+Na V10, o modo wallpaper era ativado ANTES da tela de configuração inicial.
+Esse modo usa:
+- clique atravessando a janela;
+- janela sem foco;
+- execução atrás dos ícones.
+
+Por isso o campo da API aparecia, mas não aceitava digitação.
+
+AGORA:
+1. Na primeira execução, JARVIS abre como janela normal.
+2. Você consegue clicar e digitar a API.
+3. Clica em INICIAR SISTEMAS.
+4. A configuração é salva.
+5. Só depois disso o JARVIS entra automaticamente no modo wallpaper.
+
+Também foi corrigido:
+- foco automático no campo da API;
+- tela inicial traduzida para PT-BR;
+- reabrir Configuração tira o JARVIS temporariamente do modo wallpaper;
+- depois de configurar, ele volta ao wallpaper automaticamente.
+
+TESTE:
+- Execute INICIAR_COMO_WALLPAPER.bat
+- Digite/cole sua chave na tela inicial.
+- Clique em INICIAR SISTEMAS.

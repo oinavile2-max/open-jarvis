@@ -1,0 +1,27 @@
+JARVIS BR PREMIUM V11 — CONTEXT CARDS
+
+Esta versão incorpora elementos do segundo vídeo de referência enviado.
+
+O QUE FOI ADICIONADO:
+- Interface principal continua sendo o wallpaper limpo com esfera viva.
+- Informações complexas agora aparecem em um cartão central temporário.
+- O cartão é inspirado nos painéis contextuais do vídeo.
+- Ele aparece para clima, diagnóstico do sistema, casa inteligente,
+  notícias e outras respostas visuais.
+- O cartão não fica preso: fecha sozinho após 12 segundos.
+- O restante do desktop continua visível ao redor.
+- O título muda conforme o contexto:
+  CLIMA E PREVISÃO
+  DIAGNÓSTICO DO SISTEMA
+  CASA INTELIGENTE
+  NOTÍCIAS
+- Indicador AO VIVO e horário em PT-BR.
+- Redimensionamento automático com a resolução da tela.
+
+FILOSOFIA:
+Idle/conversa simples = esfera minimalista.
+Informação rica = painel contextual temporário.
+Depois = volta sozinho para a esfera.
+
+Assim o JARVIS não vira um dashboard permanente, mas ganha a mesma
+capacidade visual de mostrar clima, sistema e automações quando necessário.

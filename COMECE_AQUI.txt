@@ -1,0 +1,14 @@
+JARVIS — GEMINI FREE — FIX 2
+
+1. Execute INSTALAR.bat (se você ainda não instalou as dependências).
+2. Execute CONFIGURAR_GEMINI_GRATIS.bat.
+3. Cole a sua chave pelo botão COLAR.
+4. Clique em SALVAR, DETECTAR MODELO E TESTAR.
+
+IMPORTANTE:
+- Esta versão NÃO usa um nome de modelo fixo no teste.
+- Ela consulta os modelos que a SUA chave realmente consegue enxergar.
+- Depois testa os modelos compatíveis e salva automaticamente o que funcionar.
+- A chave fica em config\api_keys.json somente no seu computador.
+
+Quando aparecer "Gemini conectado com sucesso", abra INICIAR_JARVIS.bat.

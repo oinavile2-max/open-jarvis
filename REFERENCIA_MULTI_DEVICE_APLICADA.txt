@@ -1,0 +1,39 @@
+JARVIS BR PREMIUM V17 — REFERÊNCIA MULTI-DISPOSITIVO
+
+O vídeo enviado foi usado como referência funcional e visual.
+
+O que foi aplicado:
+- Conceito PC + celular funcionando como um único JARVIS.
+- Device Link local para a futura versão Android.
+- Pareamento por código de 6 dígitos.
+- Painel de conexão aberto com F8.
+- Status do orb pode ser sincronizado entre PC e celular.
+- Futuro Android pode acordar o JARVIS do Windows.
+- Preparado para transferência/continuidade de conversa PC <-> Android.
+- Preparado para "chamada" chegando do celular no PC.
+- Comandos do celular podem ser encaminhados ao Windows quando o dispositivo
+  estiver pareado.
+- Visual do painel usa o mesmo núcleo neon multicolor do projeto.
+
+Segurança:
+- Pareamento obrigatório.
+- Código temporário.
+- Só dispositivos registrados são aceitos depois do pareamento.
+- Comunicação atual é pensada para rede local; camada criptográfica e
+  autenticação comercial deverão ser endurecidas antes do lançamento final.
+
+Futuro Android:
+O cliente Android poderá usar esta mesma estrutura para:
+- wake word móvel;
+- tela de chamada do JARVIS;
+- continuidade de voz;
+- estado do holograma sincronizado;
+- notificações;
+- automações autorizadas;
+- comando do PC a partir do telefone.
+
+ATALHO WINDOWS:
+F8 = JARVIS Device Link
+
+Nenhum build/EXE/APK foi gerado nesta alteração.
+Somente código-fonte.

@@ -1,0 +1,23 @@
+JARVIS BR PREMIUM V10 — WALLPAPER MODE
+
+AGORA O JARVIS FOI PREPARADO PARA SER O "ROSTO" DA ÁREA DE TRABALHO.
+
+COMPORTAMENTO:
+- roda no fundo da Área de Trabalho do Windows;
+- fica atrás dos ícones do desktop;
+- Chrome, Explorer, jogos e demais aplicativos ficam por cima;
+- não rouba cliques dos ícones;
+- não funciona como uma janela comum do desktop;
+- a esfera continua animando, ouvindo, pensando e respondendo;
+- Groq/Gemini, memória, voz e Casa Inteligente continuam rodando.
+
+PARA INICIAR:
+INICIAR_COMO_WALLPAPER.bat
+
+ATALHO:
+F10 = sair temporariamente do wallpaper e mostrar como janela normal.
+F10 novamente = voltar para o wallpaper.
+
+IMPLEMENTAÇÃO:
+Usa a camada nativa WorkerW/Progman do Windows via ctypes, sem precisar
+instalar Wallpaper Engine, Lively Wallpaper ou outro programa externo.

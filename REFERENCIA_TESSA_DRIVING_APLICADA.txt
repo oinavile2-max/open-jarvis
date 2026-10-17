@@ -1,0 +1,36 @@
+JARVIS BR PREMIUM V15 — REFERÊNCIA "JARVIS CALLS YOU WHILE DRIVING"
+
+O vídeo enviado foi analisado e aplicado como referência de UX.
+
+ELEMENTOS INCORPORADOS:
+- Conceito de JARVIS proativo: ele pode "ligar" para o usuário quando algo
+  importante precisa de atenção.
+- Interface estilo chamada recebida, com orb central.
+- Botões grandes: OUVIR JARVIS / AGORA NÃO.
+- Modo Direção com interface mínima e interação orientada por voz.
+- Prioridades de evento: baixa, normal, alta e crítica.
+- Categorias de interrupção:
+  segurança, agenda, trânsito, casa, sistema e emergência.
+- Durante direção, somente eventos de alta prioridade ou críticos devem
+  interromper por padrão.
+- Timeout automático da chamada para não deixar overlay preso.
+- Visual neon alinhado ao restante do projeto.
+
+SEGURANÇA / UX:
+- Em direção, evitar leitura longa e interação manual.
+- Interface deve priorizar voz e comandos curtos.
+- Não usar notificações triviais para interromper o motorista.
+- Não foi implementada inferência silenciosa de direção por GPS nesta etapa;
+  o contexto está preparado para ativação explícita e futura integração Android.
+
+FUTURA VERSÃO ANDROID:
+Este fluxo encaixa diretamente com a versão Android planejada:
+- notificação de chamada do JARVIS;
+- foreground service;
+- wake word;
+- modo direção;
+- Android Auto / contexto do telefone;
+- continuidade PC ↔ Android.
+
+NÃO FOI GERADO BUILD OU APK.
+Somente código-fonte.

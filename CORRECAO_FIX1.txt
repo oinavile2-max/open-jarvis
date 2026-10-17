@@ -1,0 +1,13 @@
+JARVIS BR PREMIUM V7 GROQ — FIX 1
+
+Correção:
+- Corrigido erro no configurador Groq no Python 3.14:
+  AttributeError: 'bool' object has no attribute '_root'
+
+Causa:
+tk.BooleanVar(False) interpretava False como parâmetro 'master'.
+
+Correção aplicada:
+tk.BooleanVar(value=False)
+
+Agora CONFIGURAR_GROQ.bat deve abrir normalmente.

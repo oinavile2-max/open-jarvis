@@ -1,0 +1,26 @@
+JARVIS BR PREMIUM V7 — GROQ FAST BRAIN
+
+IMPORTANTE:
+NÃO envie sua API Key do Groq pelo chat. Configure-a apenas no seu PC.
+
+CONFIGURAÇÃO:
+1. Execute CONFIGURAR_GROQ.bat
+2. Cole a chave na janela.
+3. Clique em DETECTAR MODELOS.
+4. O configurador consulta os modelos realmente disponíveis na sua conta.
+5. Escolha o modelo (ele prioriza modelos rápidos).
+6. Clique em SALVAR E TESTAR.
+7. Inicie o JARVIS.
+
+O QUE A V7 MUDA:
+- Groq vira o cérebro rápido para respostas de texto/fallback.
+- Se Groq falhar, Gemini continua como fallback.
+- O nome do modelo não fica fixo: o configurador consulta sua conta.
+- Sua chave fica em config/api_keys.json somente neste PC.
+
+NOTA SOBRE VOZ:
+O modo de voz em tempo real atual ainda usa Gemini Live porque ele cuida de
+microfone + resposta falada + ferramentas em uma única sessão.
+A próxima etapa de velocidade máxima é um pipeline próprio:
+VAD local -> STT Groq -> LLM Groq streaming -> TTS streaming.
+Isso remove a dependência do Gemini Live para conversas por voz.

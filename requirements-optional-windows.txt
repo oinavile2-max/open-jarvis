@@ -1,0 +1,7 @@
+# Dependências OPCIONAIS do Windows.
+# Não são necessárias para iniciar, testar ou compilar o JARVIS.
+#
+# Localização precisa via Windows Runtime:
+# O winsdk não é instalado pelo build principal.
+# Use somente com Python compatível (3.11/3.12) e apenas se realmente quiser esse recurso.
+winsdk>=1.0.0b10; python_version < "3.13" and sys_platform == "win32"

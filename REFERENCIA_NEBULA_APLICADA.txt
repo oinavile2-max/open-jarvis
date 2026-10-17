@@ -1,0 +1,29 @@
+JARVIS BR PREMIUM V16 — REFERÊNCIA NEBULA/LAVA
+
+O vídeo enviado foi usado como referência e aplicado ao projeto.
+
+NOVO VISUAL:
+- Cara "Nebulosa Viva" adicionada.
+- Nuvem volumétrica de partículas.
+- Movimento turbulento semelhante a fumaça/plasma.
+- Veios internos brilhantes, lembrando lava/energia.
+- A esfera deixa de parecer perfeitamente rígida e ganha deformação orgânica.
+- Áudio aumenta turbulência e brilho.
+- Estados usam cores diferentes:
+  OUVINDO      = ciano/azul
+  PENSANDO     = roxo/magenta
+  RESPONDENDO  = laranja/vermelho
+  MUDO/ERRO    = vermelho
+- A nova cara foi definida como visual padrão nesta versão.
+
+SELETOR DE CARAS:
+CONFIGURAR_RECURSOS.bat agora permite:
+- nebula
+- particle
+- reactor
+- orb
+- minimal
+
+REGRA:
+Nenhum build/EXE foi gerado nesta alteração.
+Somente código-fonte, conforme a regra atual do projeto.

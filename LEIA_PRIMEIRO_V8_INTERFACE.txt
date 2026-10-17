@@ -1,0 +1,33 @@
+JARVIS BR PREMIUM V8 — INTERFACE HOLOGRÁFICA
+
+Esta versão trabalha diretamente na interface de referência enviada.
+
+ALTERAÇÕES VISUAIS:
+- Paleta azul/ciano elétrica.
+- Cabeçalho JARVIS premium com mini núcleo e status ONLINE.
+- Cartão central superior com estado de voz.
+- Núcleo holográfico central maior e totalmente azul.
+- Painel ESTADO.
+- Painel SISTEMA.
+- Painel ENTRADA DE ÁUDIO com waveform.
+- Painel APLICAÇÕES ATIVAS real.
+- Painel de REDE.
+- Cartão grande de HORA/DATA.
+- CLIMA E CONTEXTO LOCAL.
+- PRÓXIMOS EVENTOS preparado para agenda.
+- COMANDOS RÁPIDOS em grade 3x3.
+- Botão CASA integrado à automação residencial.
+- Campo de comando em português.
+- Menus antigos SETUP/CONTROLS traduzidos para PT-BR.
+- Labels de câmera/vídeo/resumo traduzidos.
+
+FUNCIONAL:
+- CPU, RAM, GPU, rede, temperatura continuam reais.
+- Aplicações ativas agora são lidas dos processos do Windows.
+- Rede atualiza no painel direito.
+- Hora/data atualizam simultaneamente no cabeçalho e no cartão lateral.
+- Botões rápidos continuam executando comandos do JARVIS.
+
+OBSERVAÇÃO:
+A aparência final depende de PyQt6 e da resolução/escala do Windows.
+Recomenda-se 1920x1080 ou superior para ficar mais próxima da referência.

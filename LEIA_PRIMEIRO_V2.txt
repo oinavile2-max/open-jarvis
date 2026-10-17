@@ -1,0 +1,16 @@
+JARVIS BR V2 — RECONSTRUÇÃO
+
+Principais mudanças:
+- Português do Brasil como idioma obrigatório da interface e respostas.
+- Esfera holográfica definida como visual central padrão.
+- A esfera reage aos estados OUVINDO, PENSANDO, PROCESSANDO e RESPONDENDO.
+- Animação reage ao nível real de áudio durante a fala.
+- Painel principal traduzido para PT-BR.
+- Campo digitado continua funcionando mesmo quando o microfone está em espera.
+- Gemini gratuito continua sendo usado como cérebro de teste.
+
+Para iniciar:
+1. Execute CONFIGURAR_GEMINI_GRATIS.bat, se ainda não configurou a chave.
+2. Execute INICIAR_JARVIS.bat.
+
+Se uma configuração antiga ainda mostrar o rosto, abra a engrenagem e selecione HUD: ESFERA HOLOGRÁFICA, ou apague a opção hud_style do config/api_keys.json para usar o novo padrão.

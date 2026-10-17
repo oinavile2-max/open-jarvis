@@ -1,0 +1,31 @@
+JARVIS BR PREMIUM V9 — PARTICLE FACE
+
+Esta versão foi reconstruída a partir do vídeo de referência enviado.
+
+IDENTIDADE VISUAL:
+- Fundo quase preto.
+- Interface extremamente limpa.
+- Esfera viva formada por milhares de partículas.
+- Cor e brilho mudam com o estado.
+- Três estados visuais: OUVINDO / PENSANDO / RESPONDENDO.
+- Resposta atual aparece abaixo da esfera.
+- A esfera pulsa e sofre microdeformações com o áudio.
+- Sem cockpit cheio de painéis na tela principal.
+
+FUNCIONALIDADE:
+- Todo o backend da V8 continua no projeto.
+- Groq/Gemini, memória, voz, automação residencial, comandos Windows,
+  plugins e demais módulos continuam presentes.
+- Os painéis antigos continuam construídos internamente, mas ficam ocultos
+  no modo principal para preservar a aparência da referência.
+
+CORES:
+- OUVINDO: âmbar/rosé.
+- PENSANDO: violeta apagado.
+- RESPONDENDO: rosa/magenta.
+- O nível real do áudio aumenta a energia da esfera.
+
+OBJETIVO:
+A interface principal agora funciona como o "rosto" do JARVIS, exatamente
+na filosofia do vídeo: o estado e a resposta são comunicados pelo próprio
+holograma, sem poluição de dashboard.

@@ -1,0 +1,50 @@
+JARVIS BR PREMIUM V12 — PREPARAÇÃO COMERCIAL
+
+OBJETIVO DESTA VERSÃO
+Tornar o produto utilizável por pessoas comuns, sem editar JSON, .env,
+arquivos Python ou usar CMD para configurar o básico.
+
+FLUXO DO USUÁRIO FINAL
+
+1. INSTALAR_JARVIS.bat
+   - verifica Python
+   - instala dependências
+   - abre a configuração guiada
+
+2. CONFIGURAÇÃO INICIAL
+   - nome do usuário
+   - nome do assistente
+   - Groq ou Gemini
+   - campo de API com teste de conexão
+   - seleção de microfone
+   - seleção de saída de áudio
+   - teste real de microfone
+   - palavra de ativação
+   - modo wallpaper
+   - localização opcional
+   - Casa Inteligente opcional
+   - iniciar com o Windows
+
+3. INICIAR_JARVIS.bat
+   - se ainda não estiver configurado, abre o assistente automaticamente
+   - se já estiver configurado, inicia direto
+
+REGRAS DE PRODUTO
+- Interface em português do Brasil.
+- Usuário não precisa editar arquivos.
+- Integrações opcionais podem ser puladas.
+- Erros devem aparecer em janelas legíveis.
+- Configurações podem ser alteradas depois.
+- Recursos avançados ficam separados da configuração básica.
+
+PRÓXIMAS CAMADAS PARA LANÇAMENTO COMERCIAL
+- instalador .EXE assinado
+- atualizador automático
+- licenciamento/ativação
+- política de privacidade e termos
+- backup/restauração de configuração
+- exportar/importar perfil
+- recuperação de chave/configuração
+- telemetria opcional com consentimento
+- crash reporter
+- testes em máquinas limpas Windows 10/11

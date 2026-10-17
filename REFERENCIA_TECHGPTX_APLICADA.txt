@@ -1,0 +1,27 @@
+JARVIS BR PREMIUM V14 — REFERÊNCIA TECHGPTX
+
+O vídeo enviado foi usado como referência visual/funcional.
+
+ELEMENTOS APLICADOS AO JARVIS WINDOWS:
+- Home limpa e clara, com foco no assistente.
+- Esfera central grande como elemento principal.
+- Estado simples abaixo da esfera.
+- Saudação personalizada no topo.
+- Cartão compacto de clima/localização.
+- Atalhos visuais:
+  Tela
+  Memórias
+  Idioma
+- Navegação inferior inspirada no vídeo:
+  Início
+  Chat
+  Microfone
+  Ajustes
+  Atualizações
+- Botão central de microfone em destaque.
+- Painel Home acessível por F9.
+- Mantido o modo wallpaper como interface principal do Windows.
+- A referência mobile foi ADAPTADA para desktop; não copiada de forma literal.
+
+NÃO FOI GERADO BUILD/EXE.
+Esta entrega contém somente código-fonte.

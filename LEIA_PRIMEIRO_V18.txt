@@ -1,0 +1,25 @@
+JARVIS BR PREMIUM V18 — PAINEL DE CONFIGURAÇÕES
+
+AGORA EXISTE UM PAINEL CENTRAL COM AS CONFIGURAÇÕES PRINCIPAIS.
+
+ABRIR:
+PAINEL_CONFIGURACOES.bat
+
+ABAS:
+- Geral
+- IA
+- Voz
+- Ativação
+- Visual
+- Wallpaper
+- Localização
+- Casa Inteligente
+- Device Link
+- Memória
+- Plugins
+- Proatividade
+
+O botão de engrenagem da Home também foi conectado ao painel completo.
+
+Nenhum build/EXE foi gerado nesta alteração.
+Somente código-fonte.

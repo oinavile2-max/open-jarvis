@@ -1,0 +1,37 @@
+JARVIS BR PREMIUM V22 — CORRECAO DE LATENCIA (FONTE WINDOWS)
+Data: 17/10/2026
+
+ESCOPO
+- Alterada somente a fonte Windows em Python, baseada na V22.
+- Projeto Android nao foi alterado.
+- NAO foi gerado EXE nem build de instalacao.
+
+MUDANCAS EM main.py
+1. Fim de fala (VAD hibrido): quando o detector local reconhece uma pausa de
+   aproximadamente 420 ms, envia audio_stream_end=True ao Gemini Live (AAD
+   automatica habilitada), evitando aguardar deteccao de silencio remota.
+2. A sinalizacao e enfileirada DEPOIS do ultimo bloco PCM da frase.
+3. Fila de microfone limitada a 64 blocos (aprox. 2 segundos a 16 kHz/512
+   amostras). Em gargalos na rede, descarta os quadros mais antigos para evitar
+   acumulacao indefinida. Isso pode causar perda de palavras em rede ruim.
+4. Log de latencia entre audio_stream_end enviado e primeiro pacote de audio
+   recebido, alem de contagem de quadros descartados.
+5. Dados de microfone identificados como audio/pcm;rate=16000.
+
+VALIDACAO FEITA NESTE AMBIENTE
+- Sintaxe de todos os 72 modulos Python: OK.
+- Tres testes automaticos de ordem dos pacotes, fim do audio e limite de fila: OK.
+
+AINDA PRECISA DE VALIDACAO NO WINDOWS REAL
+- Teste com microfone, dispositivo de audio, internet e chave Gemini valida.
+- Cronometragem fim de fala -> primeiro som reproduzido e perdas de palavras.
+- Teste de interrupcao por voz: continua desabilitada por seguranca contra eco;
+  ativar somente depois de calibracao acustica em equipamento real.
+- Ajuste da pausa por usuario/dispositivo: 420 ms e apenas valor inicial.
+
+O resultado atual e uma correcao de codigo testada de forma isolada; nao e
+possivel garantir 1,5 s ou latencia em tempo real na rede/dispositivo final.
+
+FONTES TECNICAS
+- https://ai.google.dev/gemini-api/docs/live-api/capabilities
+- https://googleapis.github.io/python-genai/genai.html

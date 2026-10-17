@@ -1,0 +1,32 @@
+JARVIS BR PREMIUM V21 — VOZ OFICIAL
+
+O áudio enviado pelo usuário foi usado como referência de ESTILO vocal.
+
+Características extraídas da parte falada:
+- registro masculino grave;
+- frequência fundamental mediana aproximada: 102 Hz;
+- fala calma e controlada;
+- dicção clara;
+- ritmo deliberado;
+- pausas curtas;
+- pouca excitação emocional;
+- postura formal e cinematográfica.
+
+O perfil oficial criado é:
+JARVIS Oficial
+
+Configuração:
+- voz base Gemini Live: Charon;
+- fallback PT-BR: AntonioNeural;
+- velocidade: -8%;
+- pitch: -6 Hz;
+- prompt de estilo específico.
+
+Importante:
+O app não incorpora nem clona a identidade vocal exata da gravação.
+Ele usa as características gerais do tom como referência para uma voz original.
+
+JARVIS Oficial agora é o perfil padrão.
+As outras 10 opções de voz continuam disponíveis no painel.
+
+Nenhum build/EXE foi gerado nesta versão.

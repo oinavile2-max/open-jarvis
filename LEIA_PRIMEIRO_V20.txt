@@ -1,0 +1,21 @@
+JARVIS BR PREMIUM V20 — 10 OPÇÕES DE VOZ
+
+1. JARVIS Cinema
+2. JARVIS Classic
+3. JARVIS Fast
+4. JARVIS Deep
+5. JARVIS Soft
+6. JARVIS Tactical
+7. Luxury
+8. Natural BR
+9. Assistente Light
+10. Night Mode
+
+Caminho:
+Painel de Configurações -> Voz -> Perfil de voz
+
+Escolha um perfil, clique em APLICAR PERFIL DE VOZ e depois SALVAR TUDO.
+
+JARVIS Cinema continua sendo o padrão oficial.
+
+Nenhum build/EXE foi gerado nesta alteração.

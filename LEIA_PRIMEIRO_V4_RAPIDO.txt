@@ -1,0 +1,21 @@
+JARVIS BR PREMIUM V4 — MODO RÁPIDO
+
+Esta versão ataca especificamente a demora para responder e o microfone ouvindo ruído.
+
+ALTERAÇÕES:
+- fim de fala padrão: ~260 ms
+- sensibilidade de início menos agressiva para não ativar com qualquer barulho
+- noise gate local: ruído baixo vira silêncio antes de chegar ao Gemini
+- pequeno hangover para não cortar o final das palavras
+- blocos de áudio reduzidos de 64 ms para 32 ms
+- Proactive Audio desligado por padrão (ele podia deixar a resposta "um turno atrás")
+- Proactive Audio também é ignorado quando Wake Word ou Push-to-talk estiverem ativos
+- comandos digitados usam o caminho FAST do Gemini
+
+TESTE:
+1. Execute INICIAR_JARVIS.bat
+2. Fale uma frase curta e pare de falar.
+3. A resposta deve começar perceptivelmente mais cedo.
+4. Teste com ventilador/teclado/TV ao fundo; o HUD não deve tratar ruído baixo como voz.
+
+Se sua voz for muito baixa e ele cortar palavras, aumente a proximidade do microfone.

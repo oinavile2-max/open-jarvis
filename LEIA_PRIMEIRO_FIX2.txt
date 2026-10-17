@@ -1,0 +1,20 @@
+JARVIS BR PREMIUM V10 — WALLPAPER FIX 2
+
+CORRIGIDO O TRAVAMENTO DO PRINT:
+
+• RESPONDENDO preso:
+  watchdog força o fim do estado quando o áudio já acabou.
+
+• Notícias automáticas:
+  desativadas na inicialização do wallpaper.
+
+• Painel gigante de notícias/pesquisa:
+  não abre mais por cima do desktop no modo wallpaper.
+
+• Legenda:
+  volta automaticamente para "Pronto para você." após responder.
+
+TESTE:
+1. INICIAR_COMO_WALLPAPER.bat
+2. Pergunte: "Jarvis, que horas são?"
+3. Depois da resposta ele deve voltar para OUVINDO/PRONTO sozinho.
