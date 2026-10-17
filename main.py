@@ -108,7 +108,7 @@ LIVE_MODEL          = "models/gemini-3.1-flash-live-preview"
 CHANNELS            = 1
 SEND_SAMPLE_RATE    = 16000 
 RECEIVE_SAMPLE_RATE = 24000
-CHUNK_SIZE          = 512
+CHUNK_SIZE          = 320  # 20 ms at 16 kHz, matching Android V19
 
 # RMS below which 16-bit PCM is treated as room silence; above _LEVEL_FULL it
 # reads as a full-height waveform. Tuned so ordinary speech lands mid-range and
@@ -128,8 +128,9 @@ _NOISE_HANGOVER_S = 0.10
 # Then it stops streaming the microphone until Gemini completes the turn.
 _LOCAL_END_SILENCE_S = 0.42  # avoid clipping natural short pauses
 _LOCAL_REOPEN_WATCHDOG_S = 4.0
-# 64 × 512/16000 s = at most ~2 s of queued input, instead of 6.4 s.
-_MIC_QUEUE_LIMIT = 64
+# Bound unsent microphone audio to 200 ms (10 Android-sized frames).
+# Backpressure drops oldest PCM rather than accumulating seconds of latency.
+_MIC_QUEUE_LIMIT = 10
 
 
 def _pcm_level(samples) -> float:
@@ -166,7 +167,7 @@ _VIS_HOP = 480         # 20 ms between frames, i.e. 50 shapes a second
 
 # Delay from handing the first bytes of a reply to an already-running output
 # stream to hearing them: one callback period, plus whatever the DAC adds.
-_FIRST_SOUND = CHUNK_SIZE / RECEIVE_SAMPLE_RATE      # ~43 ms
+_FIRST_SOUND = CHUNK_SIZE / RECEIVE_SAMPLE_RATE      # ~13 ms; driver latency is measured separately
 # How far past the device's own buffer the mouth's timeline may drift before it
 # is re-anchored. The buffer is the hard limit on how much audio can be queued
 # ahead, so anything beyond it plus a margin for clock error is impossible.
@@ -1579,6 +1580,7 @@ class JarvisLive:
                     channels=CHANNELS,
                     dtype="int16",
                     blocksize=CHUNK_SIZE,
+                    latency="low",
                     device=dev,
                     callback=callback,
                 )
@@ -1811,6 +1813,7 @@ class JarvisLive:
                 channels=CHANNELS,
                 dtype="int16",
                 blocksize=CHUNK_SIZE,
+                latency="low",
                 device=dev,
             )
             st.start()
