@@ -7,7 +7,12 @@ on:
       - 'JARVIS.spec'
       - 'windows_launcher.py'
       - 'requirements-build.txt'
+      - '**.py'
+      - 'assets/shaders/**'
   workflow_dispatch:
+concurrency:
+  group: jarvis-windows-${{ github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:

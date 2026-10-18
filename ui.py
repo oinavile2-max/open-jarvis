@@ -5943,7 +5943,7 @@ class MainWindow(QMainWindow):
         self._orb_quality_combo.addItem("Economia", "economy")
         self._orb_quality_combo.addItem("Equilibrado", "balanced")
         self._orb_quality_combo.addItem("Premium", "premium")
-        chosen = getattr(getattr(self.hud, "_living_orb", None),
+        chosen = getattr(getattr(self.hud, "_live_ember", None),
                          "quality", "balanced")
         index = self._orb_quality_combo.findData(chosen)
         self._orb_quality_combo.setCurrentIndex(max(0,index))
@@ -6966,6 +6966,19 @@ class MainWindow(QMainWindow):
             return
         try:
             self.hud._living_orb = LivingOrb(quality=quality)
+            from core.ember_bridge import LiveEmber
+            from core.panel_settings import PanelSettings
+            previous = getattr(self.hud, '_live_ember', None)
+            if previous is not None:
+                previous.close()
+            renderer = LiveEmber(self.hud, quality=quality)
+            renderer.updated.connect(self.hud.update)
+            renderer.fault.connect(lambda message: self._log.append_log('ESFERA: '+message))
+            QApplication.instance().aboutToQuit.connect(renderer.close)
+            self.hud._live_ember = renderer
+            preferences = PanelSettings()
+            preferences.data['quality'] = quality
+            preferences.save()
             self.hud.update()
             ux = CONFIG_DIR / "ux.json"
             try:

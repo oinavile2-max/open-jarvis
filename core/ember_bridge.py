@@ -41,7 +41,8 @@ class LiveEmber(QObject):
                 self._stop.wait(max(0.,1./renderer.fps-(time.monotonic()-started)))
         except Exception as exc:
             self.failed=True;self.error=str(exc)
-            self.fault.emit('Renderização volumétrica indisponível: '+self.error)
+            if not self._stop.is_set():
+                self.fault.emit('Renderização volumétrica indisponível: '+self.error)
         finally:
             if renderer is not None:renderer.close()
     def _drain(self):

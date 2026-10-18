@@ -55,7 +55,6 @@ def main():
     def replace_renderer():
         if preview.renderer:
             preview.renderer.close()
-            preview.renderer.deleteLater()
         renderer = LiveEmber(window, quality=quality.currentText())
         renderer.updated.connect(preview.update)
         renderer.fault.connect(status.setText)
