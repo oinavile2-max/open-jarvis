@@ -1547,7 +1547,7 @@ class JarvisLive:
                             send_end = True
                             try:
                                 if hasattr(self.ui, "set_state"):
-                                    self.ui.set_state("PROCESSANDO")
+                                    self.ui.set_state("PROCESSING")
                             except Exception:
                                 pass
                 else:

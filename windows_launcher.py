@@ -28,6 +28,12 @@ def smoke_test():
     panel.update()
     assert len(panel.tabs) >= 12
     panel.destroy()
+    from ui import JarvisUI
+    desktop_ui = JarvisUI('face.png')
+    app.processEvents()
+    assert desktop_ui._win.isVisible(), 'Main window did not open'
+    desktop_ui._win.close()
+    app.processEvents()
     for asset in ('assets/shaders/ember_volume.frag', 'assets/shaders/ember_bloom.frag',
                   'core/prompt.txt', 'core/face_model.obj'):
         if not (ROOT / asset).is_file():
@@ -47,7 +53,7 @@ def smoke_test():
             renderer.close()
     except Exception as exc:
         gpu['reason'] = str(exc)
-    report = {'packaged_imports': 'passed', 'settings_window': 'passed',
+    report = {'packaged_imports': 'passed', 'settings_window': 'passed', 'main_window': 'passed',
               'assets': 'passed', 'gpu': gpu, 'live_audio_api': 'not_tested',
               'smart_home_hardware': 'not_tested'}
     (ROOT / 'smoke-test.json').write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding='utf-8')
