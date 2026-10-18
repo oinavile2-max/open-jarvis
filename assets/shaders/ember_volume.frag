@@ -44,9 +44,9 @@ void main(){
     mat3 rot=mat3(c,0,s,0,1,0,-s,0,c);
     vec3 sum=vec3(0); float trans=1.;
     float stepSize=2.7/float(quality_steps);
-    // Subpixel dither hides slice bands without frame-to-frame sparkle.
-    float jitter=hash3(vec3(gl_FragCoord.xy,0));
-    for(int k=0;k<96;k++){
+    // Centred ray samples avoid screen-space grain crawling over the smoke.
+    float jitter=.5;
+    for(int k=0;k<128;k++){
         if(k>=quality_steps || trans<.012)break;
         float z=.62+(float(k)+jitter)*stepSize;
         vec3 p=rot*(ro+rd*z)/expansion;
@@ -57,9 +57,9 @@ void main(){
         vec3 flow=q*4.7+vec3(t*.12,-t*.29,t*.09);
         float billow=fbm(flow);
         float folds=abs(sin((billow*.74+noise3(flow*2.1)*.26)*37.+radial*7.));
-        float fibre=pow(1.-folds,6.);
+        float fibre=pow(1.-folds,4.5);
         float shell=exp(-pow((radial-.81)*5.,2.));
-        float density=envelope*(.16+billow*.33+fibre*3.4*shell);
+        float density=envelope*(.10+billow*.24+fibre*2.65*shell);
         float pockets=fbm(q*3.4+vec3(-t*.23,t*.11,4.1));
         float heat=smoothstep(.40,.72,pockets+.13*(1.-radial));
         heat*=.65+.35*intensity;
@@ -67,18 +67,18 @@ void main(){
         vec3 ember=mix(vec3(.48,.003,.025),vec3(3.4,.26,.012),heat);
         ember=mix(ember,vec3(6.0,1.65,.20),pow(heat,5.));
         float inward=1.-smoothstep(.43,1.03,radial);
-        vec3 emission=ember*(heat*.8+vein*.85)*(.06+inward*2.2)*(1.28+energy*.80);
+        vec3 emission=ember*(heat*.8+vein*.85)*(.06+inward*2.2)*(.94+energy*.62);
         float light=clamp(.45+.5*q.y+.2*q.x,.1,1.);
         vec3 ash=mix(vec3(.10,.105,.12),vec3(.78,.77,.78),light);
         // Ash self-occlusion keeps hot pockets inside the smoke, not on a disc.
-        vec3 source=ash*(.20+fibre*.95)*shell+emission;
+        vec3 source=ash*(.16+fibre*1.25)*shell+emission;
         float alpha=1.-exp(-density*stepSize*3.3);
         sum+=trans*alpha*source;
         trans*=1.-alpha;
     }
     float alpha=1.-trans;
-    vec3 colour=vec3(1)-exp(-sum*1.45);
+    vec3 colour=vec3(1)-exp(-sum*1.18);
     // Premultiplied alpha for native Qt compositing on any wallpaper.
-    colour=pow(max(colour,vec3(0)),vec3(.80));
+    colour=pow(max(colour,vec3(0)),vec3(.94));
     fragColor=vec4(min(colour,vec3(alpha)),alpha);
 }

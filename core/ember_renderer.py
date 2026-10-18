@@ -19,8 +19,8 @@ PROFILES = {
     'EXECUTING': (1.035, 1.12, 1.19, .90),
     'ERROR': (.97, 1.32, .88, .82),
 }
-BUDGETS = {'economy': (256, 36, 20), 'balanced': (384, 56, 30),
-           'premium': (512, 80, 30)}
+BUDGETS = {'economy': (256, 48, 20), 'balanced': (384, 80, 30),
+           'premium': (512, 112, 30)}
 
 class EmberRenderer:
     def __init__(self, quality='balanced', backend=None, neon_strength=1.0):
@@ -48,6 +48,7 @@ class EmberRenderer:
         except Exception:
             self.ctx.release()
             raise
+        self.cognition=0.0
         self.phase=0.0
         self._last=time.monotonic()
         self._values=[1.,.68,1.,.62,0.]
@@ -65,6 +66,8 @@ class EmberRenderer:
         blend=1.-math.exp(-dt*6.)
         self._values=[v+(target-v)*blend for v,target in zip(self._values,targets)]
         exp,turb,speed,intensity,level=self._values
+        cognitive_target=1.0 if not muted and str(state).upper() in ('THINKING','PROCESSING') else 0.0
+        self.cognition+=(cognitive_target-self.cognition)*blend
         self.phase+=dt*speed
         self.volume_fbo.use();self.volume_fbo.clear(0.,0.,0.,0.)
         for key,value in {'resolution':(self.size,self.size),'phase':self.phase,
@@ -75,6 +78,8 @@ class EmberRenderer:
         self.fbo.use();self.fbo.clear(0.,0.,0.,0.)
         self.scene_texture.use(location=0)
         self.bloom['neon_strength'].value=self.neon_strength
+        self.bloom['cognition'].value=self.cognition
+        self.bloom['phase'].value=self.phase
         self.bloom_vao.render(vertices=3)
         return self.fbo.read(components=4,alignment=1)
 
