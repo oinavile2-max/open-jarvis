@@ -49,7 +49,6 @@ class EmberRenderer:
             self.ctx.release()
             raise
         self.phase=0.0
-        self.cognition=0.0
         self._last=time.monotonic()
         self._values=[1.,.68,1.,.62,0.]
 
@@ -67,8 +66,6 @@ class EmberRenderer:
         self._values=[v+(target-v)*blend for v,target in zip(self._values,targets)]
         exp,turb,speed,intensity,level=self._values
         self.phase+=dt*speed
-        cognitive_target=1. if str(state).upper() in ('THINKING','PROCESSING') else 0.
-        self.cognition+=(cognitive_target-self.cognition)*blend
         self.volume_fbo.use();self.volume_fbo.clear(0.,0.,0.,0.)
         for key,value in {'resolution':(self.size,self.size),'phase':self.phase,
                           'energy':level,'turbulence':turb,'expansion':exp,
@@ -78,8 +75,6 @@ class EmberRenderer:
         self.fbo.use();self.fbo.clear(0.,0.,0.,0.)
         self.scene_texture.use(location=0)
         self.bloom['neon_strength'].value=self.neon_strength
-        self.bloom['cognition'].value=self.cognition
-        self.bloom['phase'].value=self.phase
         self.bloom_vao.render(vertices=3)
         return self.fbo.read(components=4,alignment=1)
 
