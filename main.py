@@ -597,6 +597,7 @@ class JarvisLive:
         self.ui.on_interrupt      = self.interrupt
         self.ui.on_voice_change   = self._on_voice_change     # voice picker → rebuild session
         self.ui.on_audio_device_change = self._on_audio_device_change
+        self._audio_refresh_pending = False
         self._reconnect_event: asyncio.Event | None = None
         self._reconnect_keep = True   # False → next rebuild drops the resumption handle
 
@@ -831,7 +832,18 @@ class JarvisLive:
         session TaskGroup, so they can only be re-opened by rebuilding it —
         but the conversation is kept, which is the whole reason resumption
         landed before this feature did."""
+        self._audio_refresh_pending = True
         self.request_reconnect(keep_context=True, reason="audio device")
+
+    async def _watch_audio_hardware(self):
+        detector = audio_devices.HardwareChangeDetector()
+        while True:
+            snapshot = await asyncio.to_thread(audio_devices.hardware_signature)
+            if detector.changed(snapshot):
+                self._audio_refresh_pending = True
+                self.ui.write_log("ÁUDIO: dispositivo conectado/desconectado; atualizando microfone e saída.")
+                self.request_reconnect(keep_context=True, reason="dispositivo de áudio conectado/desconectado")
+            await asyncio.sleep(1.5)
 
     async def _watch_reconnect(self):
         """Session-scoped task: when a voluntary reconnect is requested, raise a
@@ -1612,6 +1624,9 @@ class JarvisLive:
                 print("[JARVIS] 🎤 Mic stream open")
                 while True:
                     await asyncio.sleep(0.1)
+                    if not _mic_stream.active:
+                        self._audio_refresh_pending = True
+                        raise _ReconnectSignal(keep_context=True)
         except Exception as e:
             print(f"[JARVIS] ❌ Mic: {e}")
             raise
@@ -1808,7 +1823,9 @@ class JarvisLive:
             print(f"[JARVIS] 🔊 Output device: {_spk_name}")
 
         def _open_spk(dev):
-            st = sd.RawOutputStream(
+            from core.audio_output import CallbackAudioOutput
+            st = CallbackAudioOutput(
+                sd.RawOutputStream,
                 samplerate=RECEIVE_SAMPLE_RATE,
                 channels=CHANNELS,
                 dtype="int16",
@@ -1950,6 +1967,10 @@ class JarvisLive:
 
                 try:
                     await asyncio.to_thread(stream.write, bytes(batch))
+                except TimeoutError as exc:
+                    self.ui.write_log(f"ÁUDIO: {exc}. Reconectando a saída de som.")
+                    self._audio_refresh_pending = True
+                    raise _ReconnectSignal(keep_context=True)
                 except (RuntimeError, asyncio.CancelledError):
                     break   # executor shutting down — exit cleanly
         except Exception as e:
@@ -2305,6 +2326,7 @@ class JarvisLive:
         # Enumerate audio devices off-thread. The settings drawer must never pay
         # for host-API enumeration on the Qt thread.
         audio_devices.prefetch()
+        asyncio.create_task(self._watch_audio_hardware())
 
         # Start dashboard (optional — needs: pip install fastapi "uvicorn[standard]" cryptography)
         try:
@@ -2320,6 +2342,14 @@ class JarvisLive:
 
         while True:
             try:
+                if self._audio_refresh_pending:
+                    # The prior TaskGroup has exited and both streams are closed.
+                    self._audio_refresh_pending = False
+                    try:
+                        await asyncio.to_thread(audio_devices.refresh_host)
+                    except Exception:
+                        self._audio_refresh_pending = True
+                        raise
                 print("[JARVIS] Connecting...")
                 self.ui.set_state("THINKING")
                 # Pick the rung to open the conversation on. A model resting
@@ -2538,6 +2568,8 @@ class JarvisLive:
 
 def main():
     ui = JarvisUI("face.png")
+    from core.gui_diagnostics import watch_gui
+    ui._diagnostic_timer = watch_gui(ui._app)
 
     def runner():
         ui.wait_for_api_key()

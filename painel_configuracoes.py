@@ -1,5 +1,5 @@
 from __future__ import annotations
-import json, subprocess, sys
+import json, subprocess, sys, os
 from pathlib import Path
 import tkinter as tk
 from tkinter import ttk, messagebox
@@ -59,6 +59,7 @@ class Panel(tk.Tk):
         bar = ttk.Frame(self)
         bar.pack(fill="x", padx=16, pady=(0,16))
         ttk.Button(bar, text="TESTAR ESFERA", command=self.test_orb).pack(side="left")
+        ttk.Button(bar, text="ABRIR LOGS", command=self.open_logs).pack(side="left", padx=8)
         ttk.Button(bar, text="SALVAR TUDO", command=self.save_all).pack(side="right")
         ttk.Button(bar, text="FECHAR", command=self.destroy).pack(side="right", padx=8)
 
@@ -199,6 +200,11 @@ class Panel(tk.Tk):
             "JARVIS",
             f'{prof.get("label","Perfil")}\n\n{prof.get("description","")}\n\nClique em SALVAR TUDO para confirmar.'
         )
+
+    def open_logs(self):
+        path=Path(os.environ.get('LOCALAPPDATA', str(ROOT))) / 'JarvisOS' / 'logs'
+        path.mkdir(parents=True, exist_ok=True)
+        os.startfile(str(path))
 
     def test_orb(self):
         command = ([sys.executable, "--visual-test"] if getattr(sys, "frozen", False)

@@ -21,3 +21,13 @@ smoke-test.json registra os testes do pacote, inclusive se a GPU estava
 indisponivel no servidor. Nao equivale a validacao funcional completa no seu PC.
 Esta entrega deve passar por teste de aceitacao antes de distribuicao comercial.
 Logs de falha: %LOCALAPPDATA%\JarvisOS\logs
+
+CORRECAO FIX1
+- Botoes Ajustes e Audio/microfone visiveis no desktop.
+- Conectar/desconectar dispositivos atualiza a enumeracao de audio e reconecta
+  a sessao. A retomada da conversa depende da API aceitar o contexto salvo.
+- Saida de som alimentada por callback com espera limitada em caso de falha.
+- Render de fogo/fumaca por CPU quando OpenGL nao esta disponivel. A definicao
+  e a fluidez sao menores que no render GPU; nao usa o antigo desenho de fios.
+- Ajustes > ABRIR LOGS abre os registros locais. Travamentos da interface com
+  mais de 5 segundos geram um registro de diagnostico.

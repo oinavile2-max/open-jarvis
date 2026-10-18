@@ -122,3 +122,6 @@ edge-tts
 miniaudio
 openwakeword
 onnxruntime
+
+# Volumetric CPU fallback for machines without OpenGL 3.3
+scipy>=1.11,<2

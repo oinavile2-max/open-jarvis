@@ -15,6 +15,7 @@ class LiveEmber(QObject):
         self._lock=threading.Lock();self._mail=None
         self._stop=threading.Event();self._wake=threading.Event()
         self._thread=None;self.quality=quality
+        self.backend='starting'
         self._timer=QTimer(self);self._timer.timeout.connect(self._drain)
         self._timer.start(33)
         self.destroyed.connect(lambda *_: self._stop.set())
@@ -31,14 +32,35 @@ class LiveEmber(QObject):
         renderer=None
         try:
             from core.ember_renderer import EmberRenderer
-            renderer=EmberRenderer(self.quality)
+            try:
+                renderer=EmberRenderer(self.quality)
+                self.backend='gpu'
+            except Exception as gpu_error:
+                from core.ember_cpu import CPUEmberRenderer
+                renderer=CPUEmberRenderer(self.quality)
+                self.backend='cpu'
+                self.error=str(gpu_error)
+                print('[Esfera] Usando volume de fogo/fumaça em CPU:', gpu_error)
             while not self._stop.is_set():
                 if not self._wake.wait(.2):continue
                 started=time.monotonic()
                 with self._lock:state=self._state
-                pixels=renderer.render(*state)
+                try:
+                    pixels=renderer.render(*state)
+                except Exception:
+                    if self.backend != 'gpu':
+                        raise
+                    renderer.close()
+                    from core.ember_cpu import CPUEmberRenderer
+                    renderer=CPUEmberRenderer(self.quality)
+                    self.backend='cpu'
+                    pixels=renderer.render(*state)
                 with self._lock:self._mail=(pixels,renderer.size)
-                self._stop.wait(max(0.,1./renderer.fps-(time.monotonic()-started)))
+                elapsed=time.monotonic()-started
+                # Leave CPU time available to conversation even on a weak PC.
+                pause=max(0.,1./renderer.fps-elapsed)
+                if self.backend=='cpu': pause=max(pause,elapsed*.5)
+                self._stop.wait(pause)
         except Exception as exc:
             self.failed=True;self.error=str(exc)
             if not self._stop.is_set():

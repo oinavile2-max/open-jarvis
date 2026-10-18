@@ -36,6 +36,7 @@ DEFAULT_VALUE = ""
 
 _cache: dict[str, list[str]] | None = None
 _cache_lock = threading.Lock()
+_enumeration_lock = threading.RLock()
 
 # Which host API each direction settled on, so resolve() opens the same endpoint
 # the picker listed. Filled in by _query().
@@ -255,7 +256,7 @@ def _is_pseudo(name: str) -> bool:
     return any(tok in low for tok in _PSEUDO_DEVICES)
 
 
-def _query() -> dict[str, list[str]]:
+def _query_unlocked() -> dict[str, list[str]]:
     """Return {'input': [names...], 'output': [names...]}. Never raises.
 
     Only real, selectable devices — see the note above."""
@@ -319,14 +320,25 @@ def _query() -> dict[str, list[str]]:
     return out
 
 
+def _query() -> dict[str, list[str]]:
+    with _enumeration_lock:
+        return _query_unlocked()
+
+
+def cached_devices(kind):
+    with _cache_lock:
+        return None if _cache is None else list(_cache.get(kind, []))
+
+
 def prefetch() -> None:
     """Warm the cache on a background thread. Called once at startup so the
     settings drawer never pays for enumeration on the Qt thread."""
     def _work():
         global _cache
-        result = _query()
-        with _cache_lock:
-            _cache = result
+        with _enumeration_lock:
+            result = _query()
+            with _cache_lock:
+                _cache = result
         print(f"[Audio] {len(result['input'])} input / "
               f"{len(result['output'])} output devices found")
     threading.Thread(target=_work, daemon=True, name="audio-devices").start()
@@ -419,3 +431,71 @@ def resolve(name: str, kind: str):
     except Exception as e:
         print(f"[Audio] resolve({kind}) failed: {e} — using system default")
         return None
+
+
+def hardware_signature():
+    """Read Windows endpoint presence independently of PortAudio's stale list.
+
+    Read-only MMDevices registry inspection. None means unavailable; it must
+    never be interpreted as every device disappearing.
+    """
+    import sys
+    if sys.platform != 'win32':
+        return None
+    try:
+        import winreg
+        endpoints = []
+        for direction in ('Capture', 'Render'):
+            path = r'SOFTWARE\Microsoft\Windows\CurrentVersion\MMDevices\Audio' + '\\' + direction
+            with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, path) as key:
+                for index in range(winreg.QueryInfoKey(key)[0]):
+                    name = winreg.EnumKey(key, index)
+                    try:
+                        with winreg.OpenKey(key, name) as endpoint:
+                            state = winreg.QueryValueEx(endpoint, 'DeviceState')[0]
+                        endpoints.append((direction, name, int(state)))
+                    except OSError:
+                        continue
+        return tuple(sorted(endpoints))
+    except OSError:
+        return None
+
+
+class HardwareChangeDetector:
+    """Require a stable changed snapshot before asking to rebuild audio."""
+    def __init__(self):
+        self.previous = None
+        self.candidate = None
+
+    def changed(self, signature):
+        if signature is None:
+            return False
+        if self.previous is None:
+            self.previous = signature
+            return False
+        if signature == self.previous:
+            self.candidate = None
+            return False
+        if signature != self.candidate:
+            self.candidate = signature
+            return False
+        self.previous = signature
+        self.candidate = None
+        return True
+
+
+def refresh_host():
+    """Re-enumerate PortAudio ONLY after the session's streams have closed."""
+    global _cache
+    import sounddevice as sd
+    # PortAudio's Windows backends enumerate on initialization. query_devices()
+    # alone cannot discover an endpoint plugged in after Pa_Initialize().
+    with _enumeration_lock:
+        sd._terminate()
+        sd._initialize()
+        with _cache_lock:
+            _cache = None
+        _probe_results.clear()
+        _chosen_api.update(input=None, output=None)
+        # Warm the picker before opening the replacement audio streams.
+        list_devices('input', refresh=True)

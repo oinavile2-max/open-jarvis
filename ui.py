@@ -798,6 +798,10 @@ class HudCanvas(QWidget):
             p.restore()
             self._paint_orb_status(p, cx, cy, r)
             return
+        if live is not None and not live.failed:
+            # A first CPU/GPU frame is being computed; do not flash the old wire orb.
+            self._paint_orb_status(p, cx, cy, r)
+            return
         if (self._ref_video_orb is not None
                 and self._ref_video_orb.ready and not self._ref_video_orb.failed):
             self._paint_reference_video(p, cx, cy, r)
@@ -2632,6 +2636,10 @@ class AudioDeviceOverlay(_HudOverlay):
         lay.addSpacing(4)
         self._out_box = _row("SPEAKERS — what JARVIS talks through",
                              "output", get_output_device())
+        self._device_refresh_timer = QTimer(self)
+        self._device_refresh_timer.timeout.connect(self._refresh_cached)
+        self._device_refresh_timer.start(1500)
+
 
         note = QLabel("Applying reconnects the session. Your conversation is kept.")
         note.setWordWrap(True)
@@ -2665,6 +2673,23 @@ class AudioDeviceOverlay(_HudOverlay):
         cancel.clicked.connect(self.hide)
         row.addWidget(cancel)
         lay.addLayout(row)
+
+    def _refresh_cached(self):
+        from core.audio_devices import cached_devices, DEFAULT_LABEL
+        for kind, box in (('input', self._in_box), ('output', self._out_box)):
+            names = cached_devices(kind)
+            if names is None:
+                continue  # A background rebuild owns enumeration; never block Qt.
+            current = box.currentData() or ''
+            expected = ['', *names]
+            if current and current not in names:
+                expected.append(current)
+            if [box.itemData(i) for i in range(box.count())] == expected:
+                continue
+            box.clear(); box.addItem(DEFAULT_LABEL, '')
+            for name in names: box.addItem(name, name)
+            if current and current not in names: box.addItem(current+' (desconectado)', current)
+            box.setCurrentIndex(max(0, box.findData(current)))
 
     def _apply(self):
         from memory.config_manager import (
@@ -3826,6 +3851,7 @@ class MainWindow(QMainWindow):
         sc_link = QShortcut(QKeySequence("F8"), self)
         sc_link.activated.connect(self._toggle_device_link_panel)
         QTimer.singleShot(700, self._start_device_link)
+        self._create_desktop_controls()
 
     def _show_camera_frame(self, img_bytes: bytes):
         """Slot — display camera preview overlay (main thread)."""
@@ -5627,6 +5653,38 @@ class MainWindow(QMainWindow):
             self._hide_proactive_call()
         except Exception:
             pass
+
+    def _create_desktop_controls(self):
+        # A separate native tool window stays clickable while the wallpaper
+        # intentionally passes mouse clicks through to desktop icons.
+        self._desktop_controls = QWidget(None, Qt.WindowType.Tool | Qt.WindowType.FramelessWindowHint)
+        self._desktop_controls.setWindowTitle('JARVIS — controles')
+        self._desktop_controls.setStyleSheet(
+            'QWidget {background:#111119;color:#fff;border-radius:10px;}'
+            'QPushButton {padding:9px 14px;border:1px solid #8c4b20;border-radius:8px;}'
+            'QPushButton:hover {background:#3d2115;}')
+        layout = QHBoxLayout(self._desktop_controls)
+        layout.setContentsMargins(6,6,6,6)
+        settings = QPushButton('⚙ Ajustes')
+        settings.clicked.connect(self._open_full_settings_panel)
+        audio = QPushButton('Áudio / microfone')
+        audio.clicked.connect(self._open_audio_from_desktop)
+        layout.addWidget(settings); layout.addWidget(audio)
+        self._desktop_controls.adjustSize()
+        screen = QApplication.primaryScreen().availableGeometry()
+        self._desktop_controls.move(screen.right()-self._desktop_controls.width()-18,
+                                    screen.bottom()-self._desktop_controls.height()-18)
+        self._desktop_controls.show()
+        QApplication.instance().aboutToQuit.connect(self._desktop_controls.close)
+
+    def _open_audio_from_desktop(self):
+        self.set_wallpaper_mode(False)
+        self._open_audio_devices()
+
+    def closeEvent(self, event):
+        if hasattr(self, '_desktop_controls'):
+            self._desktop_controls.close()
+        super().closeEvent(event)
 
     def _activate_wallpaper_mode(self) -> None:
         """Hospeda o JARVIS na camada do wallpaper, atrás dos ícones."""

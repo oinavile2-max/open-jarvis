@@ -32,12 +32,20 @@ def smoke_test():
     desktop_ui = JarvisUI('face.png')
     app.processEvents()
     assert desktop_ui._win.isVisible(), 'Main window did not open'
+    assert desktop_ui._win._desktop_controls.isVisible(), 'Desktop settings controls did not open'
     desktop_ui._win.close()
     app.processEvents()
     for asset in ('assets/shaders/ember_volume.frag', 'assets/shaders/ember_bloom.frag',
                   'core/prompt.txt', 'core/face_model.obj'):
         if not (ROOT / asset).is_file():
             raise FileNotFoundError(asset)
+    from core.ember_cpu import CPUEmberRenderer
+    cpu = CPUEmberRenderer('economy')
+    try:
+        for state in ('IDLE','LISTENING','THINKING','SPEAKING'):
+            assert len(cpu.render(state,.5,dt=.1)) == cpu.size*cpu.size*4
+    finally:
+        cpu.close()
     # Hosted Windows runners may have no usable OpenGL driver. Record the outcome
     # separately rather than pretending that software-only CI validates the GPU.
     gpu = {'status': 'not_available'}
@@ -53,8 +61,8 @@ def smoke_test():
             renderer.close()
     except Exception as exc:
         gpu['reason'] = str(exc)
-    report = {'packaged_imports': 'passed', 'settings_window': 'passed', 'main_window': 'passed',
-              'assets': 'passed', 'gpu': gpu, 'live_audio_api': 'not_tested',
+    report = {'packaged_imports': 'passed', 'settings_window': 'passed', 'main_window': 'passed', 'desktop_settings_controls': 'passed',
+              'assets': 'passed', 'cpu_fire_smoke': 'passed', 'gpu': gpu, 'live_audio_api': 'not_tested',
               'smart_home_hardware': 'not_tested'}
     (ROOT / 'smoke-test.json').write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding='utf-8')
     app.quit()
