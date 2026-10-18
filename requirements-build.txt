@@ -114,3 +114,11 @@ pynvml                       # system_monitor + the HUD's GPU meter (NVIDIA)
 anthropic>=0.40,<1
 
 # opcional: localização precisa do Windows
+
+# Production volume renderer and local activation runtime
+moderngl>=5.12,<6
+glcontext>=3,<4
+edge-tts
+miniaudio
+openwakeword
+onnxruntime

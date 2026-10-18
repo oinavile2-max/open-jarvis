@@ -23,9 +23,11 @@ if errorlevel 1 (
     exit /b 1
 )
 
-echo.
-echo Ambiente validado.
-echo O script de empacotamento sera executado apenas quando autorizado.
-echo.
-echo Nesta V22 o problema winsdk/Python 3.14 foi bloqueado na origem.
+echo Gerando executavel Windows...
+"%VPY%" -m PyInstaller --clean --noconfirm JARVIS.spec
+if errorlevel 1 exit /b 1
+copy "scripts\ABRIR_AJUSTES.bat" "dist\JARVIS\"
+copy "scripts\TESTAR_ESFERA.bat" "dist\JARVIS\"
+copy "docs\LEIA_PRIMEIRO_WINDOWS.txt" "dist\JARVIS\"
+echo Pronto: dist\JARVIS\JARVIS.exe
 pause

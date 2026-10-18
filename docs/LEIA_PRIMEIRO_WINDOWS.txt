@@ -1,0 +1,23 @@
+JARVIS OS — Windows x64
+
+1. Extraia o ZIP inteiro em uma pasta com permissao de escrita.
+2. Abra JARVIS.exe. O assistente solicita sua chave de API no primeiro uso.
+3. Para configurar sem iniciar conversa, abra ABRIR_AJUSTES.bat.
+4. Para verificar a esfera sem API/microfone, abra TESTAR_ESFERA.bat.
+
+Mantenha JARVIS.exe junto com todas as pastas e DLLs extraidas.
+O Python e as dependencias estao incluidos. Nao execute de dentro do ZIP.
+
+O painel inclui IA, voz, ativacao, visual, wallpaper, localizacao, casa
+inteligente, Device Link, memoria, plugins e proatividade. Alteracoes podem
+exigir reiniciar a conversa ou o aplicativo.
+
+Conversa ao vivo depende de chave valida, internet e microfone permitido.
+Casa inteligente depende de dispositivos/servidor configurados e autorizados.
+Integracoes de contas dependem de autenticacao. Nada vem com chaves pessoais.
+O teste visual usa amplitude manual e nao testa microfone ou latencia da API.
+
+smoke-test.json registra os testes do pacote, inclusive se a GPU estava
+indisponivel no servidor. Nao equivale a validacao funcional completa no seu PC.
+Esta entrega deve passar por teste de aceitacao antes de distribuicao comercial.
+Logs de falha: %LOCALAPPDATA%\JarvisOS\logs

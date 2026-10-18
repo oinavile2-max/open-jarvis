@@ -57,17 +57,18 @@ class TestFamilyGate(unittest.TestCase):
             self.assertTrue(gate.should_comment(now=datetime(2026,10,17,12),monotonic=10900,has_useful_context=True))
 
 
-class TestVideoAsset(unittest.TestCase):
-    def test_exact_video_source_is_shipped(self):
-        filename=ROOT/'assets/orb/esfera_referencia_usuario.mp4'
-        self.assertTrue(filename.is_file())
-        self.assertGreater(filename.stat().st_size, 100000)
+class TestProductionOrbAssets(unittest.TestCase):
+    def test_procedural_render_assets_are_shipped(self):
+        for name in ('ember_volume.frag', 'ember_bloom.frag'):
+            shader=ROOT/'assets'/'shaders'/name
+            self.assertTrue(shader.is_file())
+            self.assertIn('void main()', shader.read_text(encoding='utf-8'))
 
-    def test_paint_code_wired_to_reference(self):
+    def test_production_ui_uses_reactive_volume(self):
         code=(ROOT/'ui.py').read_text(encoding='utf-8')
-        self.assertIn('self._paint_reference_video(p, cx, cy, r)',code)
-        self.assertIn('self._ref_video_orb.set_active',code)
-        self.assertIn('self._ref_video_orb.adjust_motion',code)
+        self.assertIn('from core.ember_bridge import LiveEmber',code)
+        self.assertIn("get('orb_renderer', 'volumetric')",code)
+        self.assertTrue('live.update_state(' in code)
 
 if __name__ == '__main__':
     unittest.main()

@@ -58,6 +58,7 @@ class Panel(tk.Tk):
 
         bar = ttk.Frame(self)
         bar.pack(fill="x", padx=16, pady=(0,16))
+        ttk.Button(bar, text="TESTAR ESFERA", command=self.test_orb).pack(side="left")
         ttk.Button(bar, text="SALVAR TUDO", command=self.save_all).pack(side="right")
         ttk.Button(bar, text="FECHAR", command=self.destroy).pack(side="right", padx=8)
 
@@ -198,6 +199,11 @@ class Panel(tk.Tk):
             "JARVIS",
             f'{prof.get("label","Perfil")}\n\n{prof.get("description","")}\n\nClique em SALVAR TUDO para confirmar.'
         )
+
+    def test_orb(self):
+        command = ([sys.executable, "--visual-test"] if getattr(sys, "frozen", False)
+                   else [sys.executable, str(ROOT / "windows_launcher.py"), "--visual-test"])
+        subprocess.Popen(command, cwd=str(ROOT))
 
     def run(self, script):
         p=ROOT/script

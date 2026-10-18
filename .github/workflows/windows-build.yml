@@ -1,0 +1,68 @@
+name: JARVIS Windows EXE
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/windows-build.yml'
+      - 'JARVIS.spec'
+      - 'windows_launcher.py'
+      - 'requirements-build.txt'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    env:
+      PYTHONUTF8: '1'
+      PLAYWRIGHT_BROWSERS_PATH: '${{ github.workspace }}\browsers'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip wheel setuptools
+          python -m pip install -r requirements-build.txt
+          python -m pip install "pyinstaller>=6.11,<7" edge-tts miniaudio "moderngl>=5.12,<6" "glcontext>=3,<4" openwakeword onnxruntime
+      - name: Bundle browser engines and wake model
+        run: |
+          python -m playwright install chromium firefox
+          python -c "import openwakeword.utils as u; u.download_models(['hey_jarvis'])"
+      - name: Validate source
+        run: |
+          python scripts/VALIDAR_DEPENDENCIAS_BUILD.py
+          python -m unittest discover -s tests
+      - name: Build Windows EXE
+        run: python -m PyInstaller --clean --noconfirm JARVIS.spec
+      - name: Verify packaged startup and settings
+        shell: pwsh
+        run: |
+          $p = Start-Process -FilePath dist/JARVIS/JARVIS.exe -ArgumentList '--smoke-test' -PassThru -Wait
+          if ($p.ExitCode -ne 0) { throw "Packaged smoke test failed: $($p.ExitCode)" }
+          Get-Content dist/JARVIS/smoke-test.json
+          Copy-Item scripts/ABRIR_AJUSTES.bat dist/JARVIS/
+          Copy-Item scripts/TESTAR_ESFERA.bat dist/JARVIS/
+          Copy-Item docs/LEIA_PRIMEIRO_WINDOWS.txt dist/JARVIS/
+          python -m pip freeze | Out-File -Encoding utf8 dist/JARVIS/dependencias-build.txt
+          Get-FileHash dist/JARVIS/JARVIS.exe -Algorithm SHA256 | Format-List | Out-File -Encoding utf8 dist/JARVIS/SHA256.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: JARVIS-Windows-x64
+          path: dist/JARVIS/
+          compression-level: 6
+          retention-days: 30
+          if-no-files-found: error
+      - name: Upload failure logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: JARVIS-build-diagnostics
+          path: |
+            build/JARVIS/warn-JARVIS.txt
+            dist/JARVIS/smoke-test.json
+            ~/AppData/Local/JarvisOS/logs/
+          if-no-files-found: ignore
