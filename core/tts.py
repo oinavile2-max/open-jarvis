@@ -16,6 +16,8 @@ from typing import Callable, Optional
 import numpy as np
 import sounddevice as sd
 
+from core.voice_settings import DEFAULT_ELEVENLABS_VOICE_ID
+
 
 
 # USE_TF=0 stops transformers from importing TensorFlow (saves 4-8 s startup).
@@ -353,7 +355,7 @@ class KokoroTTSEngine:
 class ElevenLabsTTSEngine:
     """ElevenLabs cloud TTS – API key required."""
 
-    def __init__(self, api_key: str, voice_id: str = "pNInz6obpgDQGcFmaJgB"):
+    def __init__(self, api_key: str, voice_id: str = DEFAULT_ELEVENLABS_VOICE_ID):
         self.api_key  = api_key
         self.voice_id = voice_id
 
@@ -434,7 +436,7 @@ def create_tts_player(config: dict) -> TTSPlayer:
         engine = KokoroTTSEngine(voice=voice, speed=speed)
     elif engine_name == "elevenlabs":
         api_key  = config.get("elevenlabs_api_key", "")
-        voice_id = config.get("tts_voice", "pNInz6obpgDQGcFmaJgB")
+        voice_id = config.get("elevenlabs_voice_id") or DEFAULT_ELEVENLABS_VOICE_ID
         engine   = ElevenLabsTTSEngine(api_key=api_key, voice_id=voice_id)
     else:   # edgetts (default)
         voice  = config.get("tts_voice", "en-US-GuyNeural")

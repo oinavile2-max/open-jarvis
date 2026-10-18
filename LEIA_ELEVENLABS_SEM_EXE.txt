@@ -1,0 +1,10 @@
+JARVIS — código fonte, sem executável
+
+Voz ElevenLabs: eWbFZ2yOJGuVSXy2hrtW
+O ID e o campo de chave API ficam em Ajustes > Voz. A chave API não está incluída.
+O TTS opcional usa elevenlabs_voice_id separado de tts_voice.
+A conversa Gemini Live continua usando o áudio nativo do Gemini.
+Nenhum build foi gerado. Builds automáticos por push foram desativados.
+Reconhecimento facial com foto na esfera e menu de bandeja ainda são propostas, não funcionalidades concluídas nesta alteração.
+
+Para executar a partir do código, consulte COMECE_AQUI.txt e INSTALAR_JARVIS.bat.

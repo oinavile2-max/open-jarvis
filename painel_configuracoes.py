@@ -3,6 +3,7 @@ import json, subprocess, sys, os
 from pathlib import Path
 import tkinter as tk
 from tkinter import ttk, messagebox
+from core.voice_settings import DEFAULT_ELEVENLABS_VOICE_ID
 
 ROOT = Path(__file__).resolve().parent
 CONFIG = ROOT / "config"
@@ -107,6 +108,8 @@ class Panel(tk.Tk):
         p=self.tabs["Voz"]; self.section(p,"Voz e Áudio","10 perfis prontos para escolher.")
         cfg=load_json("user_setup.json",{})
         api=load_json("api_keys.json",{})
+        self.elevenlabs_voice_id=tk.StringVar(value=api.get("elevenlabs_voice_id") or DEFAULT_ELEVENLABS_VOICE_ID)
+        self.elevenlabs_key=tk.StringVar(value=api.get("elevenlabs_api_key",""))
         self.voice_enabled=tk.BooleanVar(value=cfg.get("voice_enabled",True))
         self.voice_profile=tk.StringVar(value=api.get("voice_profile","jarvis_official"))
         self.tts_rate=tk.StringVar(value=str(api.get("tts_rate","-6%")))
@@ -117,6 +120,9 @@ class Panel(tk.Tk):
             "jarvis_tactical","luxury","natural_br","assistant_light","night_mode"
         ])
         ttk.Button(p,text="APLICAR PERFIL DE VOZ",command=self.apply_voice_profile).pack(anchor="w",padx=16,pady=(4,8))
+        self.row(p,"ID da voz ElevenLabs",self.elevenlabs_voice_id)
+        self.row(p,"Chave API ElevenLabs",self.elevenlabs_key,secret=True)
+        ttk.Label(p,text="ElevenLabs: configuração do TTS opcional. A conversa Gemini Live mantém sua voz própria.",wraplength=650).pack(anchor="w",padx=16,pady=6)
         self.row(p,"Velocidade",self.tts_rate,["-16%","-14%","-12%","-10%","-6%","-4%","0%","+3%","+4%","+8%"])
         self.row(p,"Grave / agudo",self.tts_pitch,["-8Hz","-7Hz","-6Hz","-5Hz","-4Hz","-2Hz","0Hz","+2Hz"])
         ttk.Button(p,text="ABRIR CONFIGURAÇÃO DE ÁUDIO",command=lambda:self.run("configurar_jarvis.py")).pack(anchor="w",padx=16,pady=8)
@@ -278,7 +284,9 @@ class Panel(tk.Tk):
             "gemini_api_key":self.gemini_key.get().strip(),
             "voice_profile":self.voice_profile.get(),
             "voice_name":_vp.get("gemini_live_voice","Charon"),
-            "tts_engine":"edgetts",
+            "tts_engine":a.get("tts_engine","edgetts"),
+            "elevenlabs_voice_id":self.elevenlabs_voice_id.get().strip() or DEFAULT_ELEVENLABS_VOICE_ID,
+            "elevenlabs_api_key":self.elevenlabs_key.get().strip(),
             "tts_voice":_vp.get("fallback_tts_voice","pt-BR-AntonioNeural"),
             "tts_rate":self.tts_rate.get(),
             "tts_pitch":self.tts_pitch.get(),
