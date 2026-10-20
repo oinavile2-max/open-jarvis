@@ -128,3 +128,6 @@ scipy>=1.11,<2
 
 # Native menu keeps the Android sphere selectable
 PyQt6-WebEngine>=6.6,<7
+
+# Integrated loopback MCP server (v1 FastMCP API)
+mcp>=1.12,<2

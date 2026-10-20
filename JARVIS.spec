@@ -18,6 +18,7 @@ for path in root.glob('configur*.py'):
     datas.append((str(path), '.')); hidden.append(path.stem)
 datas += [(str(root / 'painel_configuracoes.py'), '.'), (str(root / 'LICENSE'), '.')]
 hidden += ['painel_configuracoes', 'edge_tts', 'miniaudio']
+hidden += collect_submodules('mcp')
 binaries = []
 for package in ('moderngl', 'glcontext', 'playwright', 'openwakeword'):
     d, b, h = collect_all(package)

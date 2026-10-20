@@ -36,7 +36,7 @@ class Panel(tk.Tk):
 
         self.tabs = {}
         for name in [
-            "Geral","IA","Voz","Ativação","Visual","Wallpaper",
+            "Geral","IA","Claude / MCP","Voz","Ativação","Visual","Wallpaper",
             "Localização","Casa Inteligente","Device Link","Memória",
             "Plugins","Proatividade"
         ]:
@@ -46,6 +46,7 @@ class Panel(tk.Tk):
 
         self._build_general()
         self._build_ai()
+        self._build_claude()
         self._build_voice()
         self._build_wake()
         self._build_visual()
@@ -103,6 +104,34 @@ class Panel(tk.Tk):
         f=ttk.Frame(p); f.pack(anchor="w",padx=16,pady=10)
         ttk.Button(f,text="TESTAR GROQ",command=self.test_groq).pack(side="left")
         ttk.Button(f,text="TESTAR GEMINI",command=self.test_gemini).pack(side="left",padx=8)
+
+    def _build_claude(self):
+        p = self.tabs['Claude / MCP']
+        self.section(p, 'Claude como cérebro + MCP',
+            'Instale o Claude Code nativo e execute claude auth login no terminal. '
+            'Sem chave Anthropic neste modo. Gemini continua necessário para transcrever a voz; Fish Audio faz a fala. Reinicie após salvar.')
+        cfg = load_json('api_keys.json', {})
+        self.brain_provider = tk.StringVar(value=cfg.get('brain_provider', 'claude_code'))
+        self.claude_command = tk.StringVar(value=cfg.get('claude_command', 'claude'))
+        self.claude_model = tk.StringVar(value=cfg.get('claude_model', 'sonnet'))
+        self.mcp_actions = tk.StringVar(value=', '.join(cfg.get('mcp_allowed_actions', ['system_status', 'recall_memory', 'web_search'])))
+        self.mcp_allowed_tools = tk.StringVar(value=', '.join(cfg.get('mcp_allowed_tools', [])))
+        self.row(p, 'Cérebro', self.brain_provider, ['claude_code', 'gemini'])
+        self.row(p, 'Executável Claude', self.claude_command)
+        self.row(p, 'Modelo / alias', self.claude_model)
+        self.row(p, 'Funções JARVIS autorizadas', self.mcp_actions)
+        ttk.Label(p, text='Nomes separados por vírgulas. Adicionar uma função autoriza sua execução pelo Claude. '
+                  'Por padrão: status, memória e busca. Sem shell nativo do Claude.', wraplength=850).pack(anchor='w', padx=16)
+        self.row(p, 'Ferramentas MCP autorizadas', self.mcp_allowed_tools)
+        ttk.Label(p, text='Servidores MCP adicionais (JSON). Cadastre apenas servidores que deseja executar. '
+                  'Autorize nomes exatos como mcp__github__get_me no campo acima. Sem autorização, a ferramenta será bloqueada.', wraplength=850).pack(anchor='w', padx=16, pady=(12, 4))
+        self.mcp_servers = tk.Text(p, height=7, wrap='word')
+        self.mcp_servers.pack(fill='x', padx=16)
+        self.mcp_servers.insert('1.0', json.dumps(cfg.get('mcp_servers', {}), ensure_ascii=False, indent=2))
+        links = ttk.Frame(p); links.pack(anchor='w', padx=16, pady=8)
+        import webbrowser
+        ttk.Button(links, text='INSTALAR / LOGIN CLAUDE', command=lambda: webbrowser.open('https://code.claude.com/docs/en/setup')).pack(side='left')
+        ttk.Button(links, text='CATÁLOGO MCP', command=lambda: webbrowser.open('https://mcpservers.org/pt-BR/')).pack(side='left', padx=8)
 
     def _build_voice(self):
         p=self.tabs["Voz"]; self.section(p,"Voz e Áudio","10 perfis prontos para escolher.")
@@ -271,6 +300,14 @@ class Panel(tk.Tk):
             messagebox.showerror("Localização",str(e))
 
     def save_all(self):
+        from core.claude_brain import validate_servers, approved_tools
+        try:
+            servers = validate_servers(json.loads(self.mcp_servers.get('1.0', 'end').strip() or '{}'))
+            allowed_tools = [x.strip() for x in self.mcp_allowed_tools.get().split(',') if x.strip()]
+            approved_tools({'mcp_servers': servers, 'mcp_allowed_tools': allowed_tools})
+        except (ValueError, TypeError) as exc:
+            messagebox.showerror('MCP inválido', str(exc))
+            return
         u=load_json("user_setup.json",{})
         u.update({
             "user_name":self.user_name.get().strip(),
@@ -286,6 +323,12 @@ class Panel(tk.Tk):
         _profiles = load_json("voice_profiles.json",{}).get("profiles",{})
         _vp = _profiles.get(self.voice_profile.get(),{})
         a.update({
+            "brain_provider":self.brain_provider.get(),
+            "claude_command":self.claude_command.get().strip() or 'claude',
+            "claude_model":self.claude_model.get().strip() or 'sonnet',
+            "mcp_allowed_actions":[x.strip() for x in self.mcp_actions.get().split(',') if x.strip()],
+            "mcp_servers":servers,
+            "mcp_allowed_tools":allowed_tools,
             "fast_brain_provider":self.ai_provider.get(),
             "groq_api_key":self.groq_key.get().strip(),
             "gemini_api_key":self.gemini_key.get().strip(),
