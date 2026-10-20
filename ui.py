@@ -53,7 +53,7 @@ from PyQt6.QtWidgets import (
     QApplication, QComboBox, QFileDialog, QFrame, QHBoxLayout, QLabel, QLineEdit, QSlider,
     QMainWindow, QPushButton, QScrollArea, QSizePolicy, QSplitter, QGridLayout, QInputDialog,
     QGraphicsScene, QGraphicsView,
-    QStackedWidget, QTextEdit, QVBoxLayout, QWidget, QProgressBar,
+    QStackedWidget, QTextEdit, QVBoxLayout, QWidget, QProgressBar, QTabWidget,
 )
 
 from core.visual_faces import FACES, STATE_COLORS
@@ -442,17 +442,27 @@ class HudCanvas(QWidget):
             _ux = _Path(__file__).resolve().parent / "config" / "ux.json"
             if _ux.exists():
                 _data = _json.loads(_ux.read_text(encoding="utf-8"))
-                self.hud_style = str(_data.get("face") or "nebula")
+                self.hud_style = str(_data.get("face") or "neural_blue")
+                if not _data.get("orb_choice_saved"):
+                    self.hud_style = "neural_blue"
             else:
-                self.hud_style = "nebula"
+                self.hud_style = "neural_blue"
         except Exception:
-            self.hud_style = "nebula"
+            self.hud_style = "neural_blue"
         try:
             from memory.config_manager import get_hud_style
             if get_hud_style() == "face":
                 self.hud_style = "face"
         except Exception:
             pass
+        from core.blue_network_orb import BlueNetworkOrb
+        self._blue_network = BlueNetworkOrb()
+        self._blue_started = time.monotonic()
+        self._profile_data = None
+        self._profile_pixmap = QPixmap()
+        self._profile_seen_at = 0.0
+        self._profile_verified_until = 0.0
+        self._profile_opacity = 0.0
         self.available_faces = FACES
         # A distinct, testable animation model. No video loops: the filaments
         # continuously morph and respond to the real mic/playback level.
@@ -543,9 +553,96 @@ class HudCanvas(QWidget):
         self._base_scale = 1.0    # slow "breathing" target; amp is added per-frame
         self._base_halo  = 55.0
 
+        # Android V19 particle sphere: Qt WebEngine draws the original Three.js scene.
+        # If WebEngine is unavailable, the original native orb stays functional.
+        self._android_orb_view = None
+        self._android_orb_ready = False
+        self._android_orb_counter = 0
+        if self.hud_style == "android_particle":
+            self._init_android_orb()
+
         self._tmr = QTimer(self)
         self._tmr.timeout.connect(self._step)
         self._tmr.start(16)
+
+    def _paint_profile(self, painter, cx, cy, radius, width):
+        data=self._profile_data
+        if not data or self._profile_pixmap.isNull() or self._profile_opacity < .01:return
+        size=max(80,min(180,int(data.get('size',116))))
+        x=min(width-size-24,cx+radius+36);y=max(55,cy-size/2)
+        rect=QRectF(x,y,size,size);path=QPainterPath()
+        if data.get('shape')=='rounded':path.addRoundedRect(rect,18,18)
+        else:path.addEllipse(rect)
+        painter.save();painter.setOpacity(self._profile_opacity)
+        painter.setClipPath(path)
+        pix=self._profile_pixmap.scaled(size,size,Qt.AspectRatioMode.KeepAspectRatioByExpanding,Qt.TransformationMode.SmoothTransformation)
+        painter.drawPixmap(int(x),int(y),pix,int((pix.width()-size)/2),int((pix.height()-size)/2),size,size)
+        painter.setClipping(False);painter.setPen(QPen(QColor(data.get('border','#56c8ef')),2));painter.drawPath(path)
+        painter.setFont(QFont('Segoe UI',11,QFont.Weight.DemiBold));painter.setPen(QColor('#eaf5ff'))
+        painter.drawText(QRectF(x-25,y+size+9,size+50,27),Qt.AlignmentFlag.AlignHCenter,data['name'][:30])
+        if time.monotonic()<self._profile_verified_until:
+            painter.setPen(QColor('#8fe3c7'));painter.setFont(QFont('Segoe UI',8))
+            painter.drawText(QRectF(x-25,y+size+35,size+50,20),Qt.AlignmentFlag.AlignHCenter,'Rosto reconhecido')
+        painter.restore()
+
+    def _init_android_orb(self):
+        try:
+            from PyQt6.QtWebEngineWidgets import QWebEngineView
+            from PyQt6.QtCore import QUrl
+            from PyQt6.QtGui import QColor
+            from PyQt6.QtCore import Qt as _Qt
+            base = _base_dir() / "assets" / "android_orb" / "orb.html"
+            if not base.exists():
+                return
+            view = QWebEngineView(self)
+            view.setAttribute(_Qt.WidgetAttribute.WA_TranslucentBackground, True)
+            view.page().setBackgroundColor(QColor(0, 0, 0, 0))
+            view.setStyleSheet("background: transparent; border: none;")
+            view.setContextMenuPolicy(_Qt.ContextMenuPolicy.NoContextMenu)
+            view.loadFinished.connect(lambda ok: setattr(self, "_android_orb_ready", bool(ok)))
+            view.load(QUrl.fromLocalFile(str(base.resolve())))
+            self._android_orb_view = view
+            self._layout_android_orb()
+            view.show()
+        except Exception as exc:
+            print("[JARVIS] esfera Android indisponível; usando renderizador nativo:", exc)
+            self.hud_style = "nebula"
+
+    def _layout_android_orb(self):
+        view = getattr(self, "_android_orb_view", None)
+        if view is None:
+            return
+        w, h = self.width(), self.height()
+        # Match the centrepiece slot of the existing HUD, without covering
+        # its caption or top actions. Resizes together with the main window.
+        top = 102
+        available = max(140, h - top - 145)
+        radius = min(w * .255, available * .40)
+        center_y = top + available * .50
+        size = int(max(150, min(w * .70, 3 * radius)))
+        view.setGeometry(int(w/2-size/2), int(center_y-size/2), size, size)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self._layout_android_orb()
+
+    def _sync_android_orb(self, amp):
+        view = getattr(self, "_android_orb_view", None)
+        if self.hud_style != "android_particle" or view is None or not self._android_orb_ready:
+            return
+        self._android_orb_counter += 1
+        # Limit Qt/Python -> JavaScript IPC to <= 10 calls/s.
+        if self._android_orb_counter % 6:
+            return
+        state = "speaking" if self.speaking else (
+            "idle" if self.muted else str(self.state or "idle").lower())
+        if state not in ("idle", "listening", "thinking", "processing", "speaking", "executing", "error"):
+            state = "idle"
+        level = max(0., min(1., float(amp)))
+        js = ("if(window.JarvisOrb){window.JarvisOrb.setState(%r);"
+              "window.JarvisOrb.setExternalAudio(%.3f,%.3f,%.3f);}" %
+              (state, level, level * 0.8, level * 0.7))
+        view.page().runJavaScript(js)
 
     def glance(self, dx: float, dy: float, hold: float = 1.1) -> None:
         """Ask the avatar to look somewhere for a moment (see HoloAvatar.glance)."""
@@ -1112,6 +1209,11 @@ class HudCanvas(QWidget):
         self._live_amp *= 0.86
         self._amp_disp += (self._live_amp - self._amp_disp) * 0.45
         amp = self._amp_disp
+        if (not self.muted and amp > .035) or self.speaking:
+            self._profile_seen_at = time.monotonic()
+        target = 1.0 if self._profile_data and time.monotonic()-self._profile_seen_at < 30 else 0.0
+        self._profile_opacity += (target-self._profile_opacity)*.10
+        self._sync_android_orb(amp)
         live = getattr(self, '_live_ember', None)
         if live is not None:
             live.update_state('SPEAKING' if self.speaking else self.state,
@@ -1427,10 +1529,19 @@ class HudCanvas(QWidget):
             _avail_h = max(140.0, H - _top_room - _bottom_room)
             _r = min(W * 0.255, _avail_h * 0.40)
             _cy = _top_room + _avail_h * 0.50
-            if self.hud_style == "nebula":
+            if self.hud_style == "android_particle":
+                if self._android_orb_view is None:
+                    self._paint_living_orb(p, cx, _cy, _r)
+            elif self.hud_style == "neural_blue":
+                from core.blue_network_orb import paint_blue_network
+                paint_blue_network(p, self._blue_network, cx, _cy, _r,
+                                   time.monotonic()-self._blue_started,
+                                   self._amp_disp, 'SPEAKING' if self.speaking else self.state)
+            elif self.hud_style == "nebula":
                 self._paint_living_orb(p, cx, _cy, _r)
             else:
                 self._paint_particle_face(p, cx, _cy, _r)
+            self._paint_profile(p, cx, _cy, _r, W)
             _sy_status = _cy + _r + 106.0
 
         # Minimal V9 face draws state pills and response text itself.
@@ -2803,7 +2914,7 @@ class MemoryOverlay(_HudOverlay):
 
         from memory.memory_manager import all_entries_for_ui
 
-        hdr = QLabel("🧠  WHAT JARVIS REMEMBERS")
+        hdr = QLabel("🧠  MEMÓRIA DO USUÁRIO")
         hdr.setFont(QFont("Courier New", 12, QFont.Weight.Bold))
         hdr.setStyleSheet(f"color: {C.PRI}; background: transparent;")
         self._lay.addWidget(hdr)
@@ -2814,9 +2925,8 @@ class MemoryOverlay(_HudOverlay):
 
         rows = all_entries_for_ui()
 
-        cap = QLabel(f"{len(rows)} stored facts — newest first. "
-                     f"Nothing here is sent anywhere; it lives in "
-                     f"memory/long_term.json on this machine.")
+        cap = QLabel(f"{len(rows)} informações armazenadas no perfil ativo. "
+                     "Você pode editar ou apagar. Parte dessa memória é enviada à IA para personalizar as respostas.")
         cap.setWordWrap(True)
         cap.setFont(QFont("Courier New", 7))
         cap.setStyleSheet(f"color: {C.TEXT_DIM}; background: transparent;")
@@ -2842,8 +2952,8 @@ class MemoryOverlay(_HudOverlay):
 
             for r in rows:
                 line = QHBoxLayout(); line.setSpacing(6)
-                txt = QLabel(f"<b>{r['key'].replace('_', ' ')}</b> "
-                             f"<span style='color:{C.TEXT_MED}'>— {r['value']}</span>")
+                txt = QLabel(f"{r['key'].replace('_', ' ')} — {r['value']}")
+                txt.setTextFormat(Qt.TextFormat.PlainText)
                 txt.setWordWrap(True)
                 txt.setFont(QFont("Courier New", 8))
                 txt.setStyleSheet(f"color: {C.TEXT}; background: transparent;")
@@ -2854,6 +2964,9 @@ class MemoryOverlay(_HudOverlay):
                 meta.setStyleSheet(f"color: {C.TEXT_DIM}; background: transparent;")
                 line.addWidget(meta)
 
+                edit = QPushButton("Editar")
+                edit.clicked.connect(lambda _=False, c=r["category"], k=r["key"], v=r["value"]: self._edit(c, k, v))
+                line.addWidget(edit)
                 rm = QPushButton("✕")
                 rm.setFixedSize(20, 20)
                 rm.setFont(QFont("Courier New", 8, QFont.Weight.Bold))
@@ -2893,6 +3006,13 @@ class MemoryOverlay(_HudOverlay):
         # hint is not final until then. Harmless when the first pass already
         # got it right: _settle is idempotent.
         QTimer.singleShot(0, lambda g=before: self._settle(g))
+
+    def _edit(self, category, key, value):
+        text, accepted = QInputDialog.getMultiLineText(self, 'Editar memória', key, value)
+        if accepted and text.strip():
+            from memory.memory_manager import remember
+            remember(key, text.strip(), category)
+            QTimer.singleShot(0, self._rebuild)
 
     def _forget(self, category: str, key: str):
         from memory.memory_manager import forget
@@ -3852,6 +3972,7 @@ class MainWindow(QMainWindow):
         sc_link.activated.connect(self._toggle_device_link_panel)
         QTimer.singleShot(700, self._start_device_link)
         self._create_desktop_controls()
+        self._reload_photo_profile(None)
 
     def _show_camera_frame(self, img_bytes: bytes):
         """Slot — display camera preview overlay (main thread)."""
@@ -5669,7 +5790,9 @@ class MainWindow(QMainWindow):
         settings.clicked.connect(self._open_full_settings_panel)
         audio = QPushButton('Áudio / microfone')
         audio.clicked.connect(self._open_audio_from_desktop)
-        layout.addWidget(settings); layout.addWidget(audio)
+        quick = QPushButton('☰ Menu rápido')
+        quick.clicked.connect(self._open_quick_menu)
+        layout.addWidget(quick); layout.addWidget(settings); layout.addWidget(audio)
         self._desktop_controls.adjustSize()
         screen = QApplication.primaryScreen().availableGeometry()
         self._desktop_controls.move(screen.right()-self._desktop_controls.width()-18,
@@ -5677,11 +5800,110 @@ class MainWindow(QMainWindow):
         self._desktop_controls.show()
         QApplication.instance().aboutToQuit.connect(self._desktop_controls.close)
 
+    def _reload_photo_profile(self, recognized=None):
+        try:
+            from core.face_profiles import FaceProfiles
+            data=FaceProfiles(CONFIG_DIR).load()
+            profile=next((p for p in data['profiles'] if p['id']==data.get('active')),None)
+            self.hud._profile_data = dict(profile, **{k:data[k] for k in ('size','shape','border') if k in data}) if profile and data.get('enabled',True) else None
+            self.hud._profile_pixmap=QPixmap(profile['photo']) if profile else QPixmap()
+            self.hud._profile_verified_until=time.monotonic()+30 if recognized and profile and recognized==profile['id'] else 0
+            self.hud.update()
+        except Exception as exc:
+            self._log.append_log(f'PERFIL: não foi possível carregar foto: {exc}')
+
+    def _open_photo_profiles(self):
+        from core.face_profile_dialog import FaceProfileDialog
+        dialog=getattr(self,'_photo_dialog',None)
+        if dialog is None:
+            dialog=FaceProfileDialog(CONFIG_DIR,BASE_DIR/'assets'/'face_models',self._reload_photo_profile,self._desktop_controls)
+            self._photo_dialog=dialog
+        dialog.show();dialog.raise_();dialog.activateWindow()
+
+    def _open_quick_menu(self):
+        from core.quick_settings import ORB_CHOICES
+        panel = getattr(self, '_quick_menu', None)
+        if panel is not None:
+            panel.show(); panel.raise_(); panel.activateWindow()
+            return
+        panel = QWidget(self._desktop_controls, Qt.WindowType.Tool)
+        self._quick_menu = panel
+        panel.setWindowTitle('JARVIS — Menu rápido')
+        panel.setMinimumWidth(340)
+        panel.setStyleSheet(
+            'QWidget {background:#111119;color:#eee;font:14px "Segoe UI";}'
+            'QPushButton,QComboBox {padding:10px;border:1px solid #80502e;border-radius:8px;}'
+            'QPushButton:hover {background:#352319;}'
+            'QTabBar::tab {padding:10px 18px;}')
+        layout = QVBoxLayout(panel)
+        tabs = QTabWidget(); layout.addWidget(tabs)
+        sphere = QWidget(); sl = QVBoxLayout(sphere)
+        sl.addWidget(QLabel('Escolha a esfera'))
+        picker = QComboBox()
+        for key, label in ORB_CHOICES:
+            picker.addItem(label, key)
+        picker.setCurrentIndex(max(0, picker.findData(self.hud.hud_style)))
+        sl.addWidget(picker)
+        status = QLabel('A escolha será salva para a próxima abertura.')
+        status.setWordWrap(True)
+        apply = QPushButton('Aplicar esfera')
+        apply.clicked.connect(lambda: self._apply_quick_orb(picker.currentData(), status))
+        sl.addWidget(apply); sl.addWidget(status); sl.addStretch()
+        tabs.addTab(sphere, 'Esfera')
+        shortcuts = QWidget(); al = QVBoxLayout(shortcuts)
+        for title, action in (('Áudio / microfone', self._open_audio_from_desktop),
+                              ('Todos os ajustes', self._open_full_settings_panel)):
+            button = QPushButton(title); button.clicked.connect(action); al.addWidget(button)
+        profile = QPushButton('Foto e reconhecimento'); profile.clicked.connect(self._open_photo_profiles); al.addWidget(profile)
+        memory = QPushButton('Memória do usuário'); memory.clicked.connect(self._open_memory_panel); al.addWidget(memory)
+        al.addStretch(); tabs.addTab(shortcuts, 'Atalhos')
+        from core.task_history_widget import TaskHistoryWidget
+        tabs.addTab(TaskHistoryWidget(CONFIG_DIR / 'task_runs.sqlite3'), 'Tarefas')
+        close = QPushButton('Fechar'); close.clicked.connect(panel.hide); layout.addWidget(close)
+        panel.adjustSize()
+        screen = QApplication.primaryScreen().availableGeometry()
+        panel.move(screen.right()-panel.width()-18,
+                   max(screen.top(), screen.bottom()-panel.height()-self._desktop_controls.height()-30))
+        panel.show()
+        QApplication.instance().aboutToQuit.connect(panel.close)
+
+    def _apply_quick_orb(self, style, status):
+        from core.quick_settings import save_orb_choice
+        previous = self.hud.hud_style
+        try:
+            if style == 'android_particle' and self.hud._android_orb_view is None:
+                self.hud._init_android_orb()
+                if self.hud._android_orb_view is None:
+                    self.hud.hud_style = previous
+                    status.setText('Esfera Android indisponível. Confira os ajustes e o log.')
+                    return
+            save_orb_choice(CONFIG_DIR, style)
+            from memory.config_manager import save_hud_style
+            save_hud_style('core')
+            self.hud.hud_style = style
+            view = self.hud._android_orb_view
+            if view is not None:
+                view.setVisible(style == 'android_particle')
+            self.hud.update()
+            self._refresh_hud_btn()
+            status.setText('Esfera aplicada e escolha salva.')
+        except Exception as exc:
+            self.hud.hud_style = previous
+            if self.hud._android_orb_view is not None:
+                self.hud._android_orb_view.setVisible(previous == 'android_particle')
+            self.hud.update()
+            status.setText('Não foi possível aplicar a esfera. Confira o log.')
+            self._log.append_log(f'ESFERA: falha ao trocar — {exc}')
+
     def _open_audio_from_desktop(self):
         self.set_wallpaper_mode(False)
         self._open_audio_devices()
 
     def closeEvent(self, event):
+        if getattr(self, '_photo_dialog', None) is not None:
+            self._photo_dialog.close()
+        if getattr(self, '_quick_menu', None) is not None:
+            self._quick_menu.close()
         if hasattr(self, '_desktop_controls'):
             self._desktop_controls.close()
         super().closeEvent(event)
@@ -6181,6 +6403,7 @@ class MainWindow(QMainWindow):
         sep.setStyleSheet(f"color: {C.BORDER};"); lay.addWidget(sep)
 
         # ── text display ──────────────────────────────────────────────────────
+        self._search_cards_widget = None
         self._content_display = QTextEdit()
         self._content_display.setReadOnly(True)
         self._content_display.setFont(QFont("Courier New", 8))
@@ -6223,6 +6446,13 @@ class MainWindow(QMainWindow):
         self.hud.glance(0.0, -0.85, hold=1.3)
         self._content_title_lbl.setText(title.upper()[:48])
         self._content_ts_lbl.setText(_time.strftime("%H:%M:%S"))
+        from core.search_cards import make_search_widget
+        if self._search_cards_widget is not None:
+            self._search_cards_widget.setParent(None);self._search_cards_widget.deleteLater()
+        self._search_cards_widget=make_search_widget(text,self._content_panel)
+        if self._search_cards_widget is not None:
+            self._content_panel.layout().addWidget(self._search_cards_widget)
+        self._content_display.setVisible(self._search_cards_widget is None)
         self._content_display.setPlainText(text)
         self._content_display.moveCursor(
             self._content_display.textCursor().MoveOperation.Start
@@ -6315,6 +6545,12 @@ class MainWindow(QMainWindow):
             self._wp_card_text.show()
             self._wp_card_title.setText(shown)
             self._wp_card_meta.setText(_time.strftime("%H:%M:%S")+"  •  JARVIS")
+            from core.search_cards import make_search_widget
+            old=getattr(self,'_wp_search_cards',None)
+            if old is not None:old.setParent(None);old.deleteLater()
+            self._wp_search_cards=make_search_widget(str(text or ''),self._wp_card_text.parentWidget())
+            if self._wp_search_cards is not None:self._wp_card_text.parentWidget().layout().addWidget(self._wp_search_cards)
+            self._wp_card_text.setVisible(self._wp_search_cards is None)
             self._wp_card_text.setPlainText(str(text or ""))
 
             screen=QApplication.primaryScreen()

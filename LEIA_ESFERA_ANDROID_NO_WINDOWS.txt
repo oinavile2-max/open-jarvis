@@ -1,0 +1,15 @@
+ESFERA DO JARVIS ANDROID NO WINDOWS — FONTE, SEM EXE
+
+Integrada a cena Three.js de app/src/main/assets/orb.html do projeto Android V19.
+A esfera aparece no painel central do JARVIS Windows e acompanha estados reais de fala e audio.
+
+Dependência: pip install -r requirements.txt (inclui PyQt6-WebEngine).
+Se WebEngine ou arquivos faltarem, o renderizador nativo continua como fallback.
+
+O novo modo android_particle é padrão quando não existe config/ux.json.
+Para selecionar em instalação existente, edite config/ux.json (chave "face": "android_particle").
+Para voltar à esfera antiga, escolha "face": "nebula".
+A janela flutuante e as integrações de voz ElevenLabs existentes não foram removidas.
+
+A câmera de Android não foi portada, apenas o elemento visual da esfera.
+Não foi executado teste de UI real no Windows e não foi gerado EXE.

@@ -1,0 +1,27 @@
+CORREÇÃO DO MICROFONE — SEM EXE
+
+1. Extraia este ZIP em uma pasta nova. Feche o JARVIS anterior.
+2. Execute INICIAR_JARVIS.bat desta pasta. O EXE antigo não recebe esta correção.
+3. Em Áudio / microfone, selecione sua entrada e aplique.
+4. Confira se Mudo está desligado. Se pressionar para falar estiver ligado,
+   mantenha a tecla configurada pressionada; se a ativação por nome estiver
+   ligada, acorde o JARVIS antes de falar.
+
+ALTERAÇÕES
+- Removido filtro fixo que eliminava falas baixas antes do envio ao Gemini.
+- Pausas reais continuam sendo enviadas para a detecção de fim de fala do servidor.
+- Reconexão limpa o estado anterior de reprodução que podia bloquear a entrada.
+- Log identifica entrada aberta, quadros, pico e bloqueios por modo de uso.
+- Reconecta se o driver parar de entregar quadros por mais de 3 segundos.
+- Alerta se a entrada entregar somente zeros por 10 segundos.
+- Esfera Android preservada sem alteração.
+
+VERIFICAÇÃO
+25 testes automatizados passaram, incluindo fala baixa, pausas, mudo e PTT.
+Microfone físico, credenciais e resposta real do Gemini no Windows não foram
+validados neste ambiente. A causa exata no PC ainda depende dos logs.
+
+SE CONTINUAR
+Em Ajustes > ABRIR LOGS, envie as linhas [MIC], ÁUDIO e o erro da conexão,
+sem suas chaves API. Confira também Configurações do Windows > Privacidade
+> Microfone > permitir acesso de aplicativos da área de trabalho.

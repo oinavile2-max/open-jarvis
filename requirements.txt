@@ -117,3 +117,6 @@ anthropic>=0.40,<1
 
 # Real-time volumetric ember renderer (OpenGL 3.3)
 moderngl>=5.10,<6
+
+# Three.js sphere from Android, embedded in native Qt HUD
+PyQt6-WebEngine>=6.6,<7

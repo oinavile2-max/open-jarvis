@@ -1,5 +1,7 @@
 name: JARVIS Windows EXE
 on:
+  push:
+    branches: [codex/windows-20261020]
   workflow_dispatch:
 concurrency:
   group: jarvis-windows-${{ github.ref }}
@@ -28,6 +30,8 @@ jobs:
         run: |
           python -m playwright install chromium firefox
           python -c "import openwakeword.utils as u; u.download_models(['hey_jarvis'])"
+      - name: Bundle face recognition models
+        run: python scripts/download_face_models.py
       - name: Validate source
         run: |
           python scripts/VALIDAR_DEPENDENCIAS_BUILD.py
@@ -47,11 +51,20 @@ jobs:
           Get-FileHash dist/JARVIS/JARVIS.exe -Algorithm SHA256 | Format-List | Out-File -Encoding utf8 dist/JARVIS/SHA256.txt
       - uses: actions/upload-artifact@v4
         with:
-          name: JARVIS-Windows-x64-Fix1
+          name: JARVIS-Windows-x64-20261020
           path: dist/JARVIS/
           compression-level: 6
           retention-days: 30
           if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: JARVIS-validation-20261020
+          path: |
+            dist/JARVIS/smoke-test.json
+            dist/JARVIS/smoke-main.png
+            dist/JARVIS/dependencias-build.txt
+            dist/JARVIS/SHA256.txt
+          retention-days: 30
       - name: Upload failure logs
         if: failure()
         uses: actions/upload-artifact@v4

@@ -3,7 +3,7 @@ from pathlib import Path
 from PyInstaller.utils.hooks import collect_submodules, collect_all
 root = Path(SPECPATH)
 datas = []
-hidden = ['main', 'ui', 'tkinter', 'PyQt6.QtMultimedia', 'PyQt6.QtMultimediaWidgets']
+hidden = ['main', 'ui', 'tkinter', 'PyQt6.QtMultimedia', 'PyQt6.QtMultimediaWidgets', 'PyQt6.QtWebEngineWidgets', 'PyQt6.QtWebEngineCore']
 for package in ('core', 'actions', 'plugins', 'memory', 'dashboard', 'ui_components'):
     hidden += collect_submodules(package)
     for path in (root / package).rglob('*'):

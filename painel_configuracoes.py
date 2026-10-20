@@ -3,7 +3,7 @@ import json, subprocess, sys, os
 from pathlib import Path
 import tkinter as tk
 from tkinter import ttk, messagebox
-from core.voice_settings import DEFAULT_ELEVENLABS_VOICE_ID
+from core.voice_settings import DEFAULT_ELEVENLABS_VOICE_ID, DEFAULT_FISH_AUDIO_VOICE_ID
 
 ROOT = Path(__file__).resolve().parent
 CONFIG = ROOT / "config"
@@ -110,6 +110,9 @@ class Panel(tk.Tk):
         api=load_json("api_keys.json",{})
         self.elevenlabs_voice_id=tk.StringVar(value=api.get("elevenlabs_voice_id") or DEFAULT_ELEVENLABS_VOICE_ID)
         self.elevenlabs_key=tk.StringVar(value=api.get("elevenlabs_api_key",""))
+        self.voice_output=tk.StringVar(value=api.get("voice_output_provider","fish_audio"))
+        self.fish_key=tk.StringVar(value=api.get("fish_audio_api_key",""))
+        self.fish_voice_id=tk.StringVar(value=api.get("fish_audio_voice_id") or DEFAULT_FISH_AUDIO_VOICE_ID)
         self.voice_enabled=tk.BooleanVar(value=cfg.get("voice_enabled",True))
         self.voice_profile=tk.StringVar(value=api.get("voice_profile","jarvis_official"))
         self.tts_rate=tk.StringVar(value=str(api.get("tts_rate","-6%")))
@@ -120,6 +123,10 @@ class Panel(tk.Tk):
             "jarvis_tactical","luxury","natural_br","assistant_light","night_mode"
         ])
         ttk.Button(p,text="APLICAR PERFIL DE VOZ",command=self.apply_voice_profile).pack(anchor="w",padx=16,pady=(4,8))
+        self.row(p,"Voz das respostas",self.voice_output,["fish_audio","gemini"])
+        self.row(p,"Chave API Fish Audio",self.fish_key,secret=True)
+        self.row(p,"ID da voz Fish Audio",self.fish_voice_id)
+        ttk.Label(p,text="Fish Audio usa a chave acima. Salve e reinicie o JARVIS. Sem chave, usa a voz Gemini.",wraplength=650).pack(anchor="w",padx=16,pady=4)
         self.row(p,"ID da voz ElevenLabs",self.elevenlabs_voice_id)
         self.row(p,"Chave API ElevenLabs",self.elevenlabs_key,secret=True)
         ttk.Label(p,text="ElevenLabs: configuração do TTS opcional. A conversa Gemini Live mantém sua voz própria.",wraplength=650).pack(anchor="w",padx=16,pady=6)
@@ -286,6 +293,9 @@ class Panel(tk.Tk):
             "voice_name":_vp.get("gemini_live_voice","Charon"),
             "tts_engine":a.get("tts_engine","edgetts"),
             "elevenlabs_voice_id":self.elevenlabs_voice_id.get().strip() or DEFAULT_ELEVENLABS_VOICE_ID,
+            "fish_audio_voice_id":self.fish_voice_id.get().strip() or DEFAULT_FISH_AUDIO_VOICE_ID,
+            "fish_audio_api_key":self.fish_key.get().strip(),
+            "voice_output_provider":self.voice_output.get(),
             "elevenlabs_api_key":self.elevenlabs_key.get().strip(),
             "tts_voice":_vp.get("fallback_tts_voice","pt-BR-AntonioNeural"),
             "tts_rate":self.tts_rate.get(),

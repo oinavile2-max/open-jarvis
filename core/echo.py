@@ -10,10 +10,9 @@ during that gap is how an assistant hears its own last sentence and answers
 itself. This module lets the tail drop our own voice while still passing a user
 who replies instantly, instead of blanket-muting.
 
-Interrupting mid-sentence by voice is the other thing it can do, and everything
-needed for it is here and tested — but it depends on the listener's room, so it
-stays switched off until it can be tried on real hardware. See the note in
-`_listen_audio` for how little it takes to turn back on.
+During playback, microphone frames are classified locally. Consecutive positive
+frames trigger interruption; their PCM is retained so the correction's opening
+syllables reach the server. Room-dependent false positives remain possible.
 
 The problem with a level test
 -----------------------------
@@ -84,8 +83,8 @@ _HEAD_MULT = 1.15     # ...with this much headroom above it
 # so a level test can never be passed. Time can: echo wobbles around its median
 # while a person talking holds above it, so such rooms hold the evidence longer.
 _UNRELIABLE_FLOOR = 0.22
-_BLOCKS_NORMAL = 5    # ~320 ms of sustained evidence
-_BLOCKS_NOISY = 12    # ~770 ms when the room is this hard
+_BLOCKS_NORMAL = 5    # 100 ms at 20 ms per microphone frame
+_BLOCKS_NOISY = 12    # 240 ms in difficult rooms
 
 _FLOOR_WINDOW = 60    # blocks kept to characterise the room's echo
 _FLOOR_Q = 35         # percentile taken as "typical echo here"
@@ -99,7 +98,7 @@ def band_energies(pcm, sr: int) -> np.ndarray:
     Left unnormalised on purpose: the decision below projects one of these onto
     another, and a projection needs real magnitudes.
     """
-    x = np.asarray(pcm, dtype=np.float32)
+    x = np.asarray(pcm, dtype=np.float32).reshape(-1)
     if x.size < 64:
         return np.zeros(len(_BAND_EDGES) - 1, dtype=np.float32)
     x = x - x.mean()

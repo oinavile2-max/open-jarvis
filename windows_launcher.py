@@ -26,6 +26,8 @@ def smoke_test():
     panel = Panel()
     panel.update_idletasks()
     panel.update()
+    assert panel.fish_voice_id.get() == '4ff2cc8f7c524b38a7fa110e4e12c72d'
+    assert hasattr(panel, 'fish_key')
     assert len(panel.tabs) >= 12
     panel.destroy()
     from ui import JarvisUI
@@ -33,6 +35,30 @@ def smoke_test():
     app.processEvents()
     assert desktop_ui._win.isVisible(), 'Main window did not open'
     assert desktop_ui._win._desktop_controls.isVisible(), 'Desktop settings controls did not open'
+    assert desktop_ui._win.hud.hud_style == 'neural_blue', 'Blue sphere default missing'
+    desktop_ui._win._open_quick_menu()
+    app.processEvents()
+    assert desktop_ui._win._quick_menu.isVisible(), 'Quick menu missing'
+    desktop_ui._win._quick_menu.hide()
+    from PyQt6.QtWidgets import QLabel
+    note = QLabel()
+    for style in ('particle', 'nebula', 'neural_blue'):
+        desktop_ui._win._apply_quick_orb(style, note)
+        assert desktop_ui._win.hud.hud_style == style, note.text()
+    desktop_ui._win._open_photo_profiles()
+    app.processEvents()
+    assert desktop_ui._win._photo_dialog.isVisible()
+    desktop_ui._win._photo_dialog.close()
+    from core.face_profiles import FaceMatcher
+    FaceMatcher(ROOT/'assets'/'face_models')
+    desktop_ui._win.set_wallpaper_mode(False)
+    desktop_ui._win._show_content('Pesquisa', 'Search results for: teste\n\n1. Fonte de teste\nResumo legível.\nSource: https://example.com')
+    app.processEvents()
+    assert desktop_ui._win._search_cards_widget is not None
+    desktop_ui._win.grab().save(str(ROOT / 'smoke-main.png'))
+    # Smoke settings are isolated from the shipped default.
+    ux = ROOT / 'config' / 'ux.json'
+    if ux.exists(): ux.unlink()
     desktop_ui._win.close()
     app.processEvents()
     for asset in ('assets/shaders/ember_volume.frag', 'assets/shaders/ember_bloom.frag',
@@ -62,7 +88,7 @@ def smoke_test():
     except Exception as exc:
         gpu['reason'] = str(exc)
     report = {'packaged_imports': 'passed', 'settings_window': 'passed', 'main_window': 'passed', 'desktop_settings_controls': 'passed',
-              'assets': 'passed', 'cpu_fire_smoke': 'passed', 'gpu': gpu, 'live_audio_api': 'not_tested',
+              'assets': 'passed', 'quick_menu': 'passed', 'sphere_switch': 'passed', 'fish_settings': 'passed', 'photo_dialog': 'passed', 'face_models_load': 'passed', 'search_cards': 'passed', 'cpu_fire_smoke': 'passed', 'gpu': gpu, 'live_audio_api': 'not_tested',
               'smart_home_hardware': 'not_tested'}
     (ROOT / 'smoke-test.json').write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding='utf-8')
     app.quit()
