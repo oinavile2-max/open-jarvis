@@ -1,6 +1,6 @@
 # Windows x64 portable bundle. No personal config or credentials are included.
 from pathlib import Path
-from PyInstaller.utils.hooks import collect_submodules, collect_all
+from PyInstaller.utils.hooks import collect_submodules, collect_all, copy_metadata
 root = Path(SPECPATH)
 datas = []
 hidden = ['main', 'ui', 'tkinter', 'PyQt6.QtMultimedia', 'PyQt6.QtMultimediaWidgets', 'PyQt6.QtWebEngineWidgets', 'PyQt6.QtWebEngineCore']
@@ -21,6 +21,8 @@ hidden += ['painel_configuracoes', 'edge_tts', 'miniaudio']
 # The optional MCP developer CLI exits at import without typer; it is not
 # used by the embedded server or the external native Claude executable.
 hidden += collect_submodules('mcp', filter=lambda name: name != 'mcp.cli' and not name.startswith('mcp.cli.'))
+# FastMCP reads its distribution version on import in a frozen process.
+datas += copy_metadata('mcp')
 binaries = []
 for package in ('moderngl', 'glcontext', 'playwright', 'openwakeword'):
     d, b, h = collect_all(package)
