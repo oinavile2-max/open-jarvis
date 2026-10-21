@@ -307,8 +307,11 @@ def _render_prompt(template: str, values: dict) -> str:
 
 
 def _get_api_key() -> str:
-    with open(API_CONFIG_PATH, "r", encoding="utf-8") as f:
-        return json.load(f)["gemini_api_key"]
+    try:
+        with open(API_CONFIG_PATH, "r", encoding="utf-8") as f:
+            return str(json.load(f).get("gemini_api_key") or '').strip()
+    except (OSError, ValueError, AttributeError):
+        return ''
 
 
 def _load_system_prompt() -> str:
@@ -2533,6 +2536,11 @@ class JarvisLive:
             print(f"[Dashboard] Disabled: {e}")
             self._dashboard = None
 
+        if self._claude_mode and not _get_api_key():
+            self.ui.write_log('CLAUDE: comandos digitados disponíveis. Para ouvir e falar, configure Gemini em IA e Fish Audio em Voz; depois reinicie.')
+            self.ui.set_state('LISTENING')
+            await asyncio.Event().wait()
+
         while True:
             try:
                 if self._audio_refresh_pending:
@@ -2768,6 +2776,14 @@ class JarvisLive:
                     self._conn_backoff = 3
             finally:
                 self.session = None
+                # The session owns these workers. Never feed a cancelled Fish
+                # stream during reconnection; typed Claude replies remain text.
+                if self._claude_task and not self._claude_task.done():
+                    self._claude_task.cancel()
+                    await asyncio.gather(self._claude_task, return_exceptions=True)
+                if self._fish:
+                    self._fish.cancel()
+                self._fish = None
                 # Only save if there was a real conversation (≥3 turns)
                 if len(self._session_log) >= 3:
                     asyncio.create_task(self._save_session_summary())

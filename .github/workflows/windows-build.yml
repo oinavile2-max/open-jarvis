@@ -47,18 +47,19 @@ jobs:
           Copy-Item scripts/ABRIR_AJUSTES.bat dist/JARVIS/
           Copy-Item scripts/TESTAR_ESFERA.bat dist/JARVIS/
           Copy-Item docs/LEIA_PRIMEIRO_WINDOWS.txt dist/JARVIS/
+          Copy-Item docs/CLAUDE_MCP.md dist/JARVIS/
           python -m pip freeze | Out-File -Encoding utf8 dist/JARVIS/dependencias-build.txt
           Get-FileHash dist/JARVIS/JARVIS.exe -Algorithm SHA256 | Format-List | Out-File -Encoding utf8 dist/JARVIS/SHA256.txt
       - uses: actions/upload-artifact@v4
         with:
-          name: JARVIS-Windows-x64-20261020
+          name: JARVIS-Windows-x64-20261021-Claude-MCP
           path: dist/JARVIS/
           compression-level: 6
           retention-days: 30
           if-no-files-found: error
       - uses: actions/upload-artifact@v4
         with:
-          name: JARVIS-validation-20261020
+          name: JARVIS-validation-20261021-Claude-MCP
           path: |
             dist/JARVIS/smoke-test.json
             dist/JARVIS/smoke-main.png

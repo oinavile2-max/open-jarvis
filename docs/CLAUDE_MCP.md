@@ -2,7 +2,7 @@
 
 Ajustes → **Claude / MCP** controla o cérebro principal. O padrão é `claude_code`.
 O modo anterior continua disponível selecionando `gemini` e reiniciando.
-Esta alteração é de código-fonte; o EXE distribuído anteriormente não contém esta integração.
+A compilação Windows de 21/10/2026 inclui esta integração. Claude Code nativo deve ser instalado separadamente.
 
 ## Ativação no Windows
 
@@ -14,7 +14,7 @@ Esta alteração é de código-fonte; o EXE distribuído anteriormente não cont
 
 Este modo usa as credenciais do Claude Code, não o campo de chave Anthropic do especialista antigo. O acesso depende do plano e das permissões da conta. Variáveis `ANTHROPIC_*` não são herdadas pelo processo, evitando troca acidental para cobrança API.
 Sem CLI/login, o HUD mostra o erro; não troca silenciosamente para outro cérebro.
-Sem Fish Audio ativo, a resposta aparece em texto. Sem Gemini, o comando digitado pode funcionar, mas o microfone não terá transcrição. Reconhecimento de rosto permanece local.
+Nesta versão, a saída Fish Audio compartilha o ciclo da sessão Gemini Live: requer sessão conectada, mesmo para falar uma resposta digitada. Durante desconexão, a resposta aparece em texto até reconectar. Sem Fish Audio ativo, a resposta aparece em texto. Sem Gemini, o comando digitado pode funcionar, mas o microfone não terá transcrição. Reconhecimento de rosto permanece local.
 
 ## Fluxo
 

@@ -31,3 +31,15 @@ CORRECAO FIX1
   e a fluidez sao menores que no render GPU; nao usa o antigo desenho de fios.
 - Ajustes > ABRIR LOGS abre os registros locais. Travamentos da interface com
   mais de 5 segundos geram um registro de diagnostico.
+
+ATUALIZACAO 21/10/2026 — CLAUDE / MCP
+- Cerebro principal: Claude Code (executavel nativo claude.exe, instalado separadamente).
+- Primeiro uso: instale Claude Code pelo guia https://code.claude.com/docs/en/setup
+  e execute claude auth login no terminal do Windows.
+- Ajustes > Claude / MCP: caminho do executavel, modelo (sonnet), servidores e permissoes.
+- Texto digitado funciona no modo Claude sem chave Gemini depois de salvar os ajustes e reiniciar.
+- Voz nesta versao: precisa de sessao Gemini conectada para transcricao e chave Fish Audio para fala.
+  Durante queda da sessao Gemini, Claude responde por texto ate reconectar.
+- O EXE nao inclui conta/plano Claude nem chaves pessoais. Leia CLAUDE_MCP.md.
+- O teste do pacote verifica autenticacao e chamadas MCP locais reais; nao valida login Claude,
+  microfone, Fish Audio ou latencia real no seu PC.

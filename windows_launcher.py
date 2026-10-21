@@ -13,6 +13,42 @@ SCRIPTS = {'painel_configuracoes.py', 'configurar_jarvis.py', 'configurar_recurs
            'configurar_groq.py', 'configure_claude.py', 'main.py'}
 
 
+async def verify_packaged_mcp():
+    """Credential-free protocol check performed by the frozen executable."""
+    import asyncio
+    import json
+    import httpx
+    from mcp import ClientSession
+    from mcp.client.streamable_http import streamablehttp_client
+    from core.mcp_bridge import MCPBridge
+
+    async def execute(name, arguments):
+        return {'result': 'online'}
+
+    bridge = MCPBridge([{'name': 'system_status', 'parameters': {'type': 'object'}}], execute, {})
+    try:
+        async with asyncio.timeout(20):
+            path = await bridge.start()
+            server = json.loads(path.read_text())['mcpServers']['jarvis']
+            async with httpx.AsyncClient(trust_env=False) as client:
+                denied = await client.post(server['url'], json={})
+                assert denied.status_code == 401, 'MCP accepted a missing token'
+            def local_client(**kwargs):
+                return httpx.AsyncClient(trust_env=False, follow_redirects=True, **kwargs)
+            async with streamablehttp_client(server['url'], headers=server['headers'], httpx_client_factory=local_client) as (read, write, _):
+                async with ClientSession(read, write) as session:
+                    await session.initialize()
+                    tools = await session.list_tools()
+                    assert {tool.name for tool in tools.tools} == {'jarvis_list_tools', 'jarvis_execute'}
+                    result = await session.call_tool('jarvis_execute', {'name': 'system_status', 'arguments': {}})
+                    assert not result.isError, 'Authorized MCP call failed'
+                    blocked = await session.call_tool('jarvis_execute', {'name': 'delete_files', 'arguments': {}})
+                    assert blocked.isError, 'Unlisted MCP action was accepted'
+    finally:
+        await bridge.close()
+    return 'passed'
+
+
 def smoke_test():
     """Exercise packaged imports, settings window, assets and the actual shader."""
     import json
@@ -20,7 +56,8 @@ def smoke_test():
     from PyQt6.QtWidgets import QApplication
     app = QApplication.instance() or QApplication([])
     for module in ('main', 'sounddevice', 'google.genai', 'cv2', 'playwright.sync_api',
-                   'core.ember_renderer', 'win32com.client', 'actions.screen_processor'):
+                   'core.ember_renderer', 'win32com.client', 'actions.screen_processor',
+                   'core.claude_brain', 'core.mcp_bridge', 'core.startup_settings'):
         importlib.import_module(module)
     from painel_configuracoes import Panel
     panel = Panel()
@@ -28,6 +65,10 @@ def smoke_test():
     panel.update()
     assert panel.fish_voice_id.get() == '4ff2cc8f7c524b38a7fa110e4e12c72d'
     assert hasattr(panel, 'fish_key')
+    assert 'Claude / MCP' in panel.tabs
+    assert panel.brain_provider.get() == 'claude_code'
+    assert panel.claude_model.get() == 'sonnet'
+    assert hasattr(panel, 'mcp_servers')
     assert len(panel.tabs) >= 12
     panel.destroy()
     from ui import JarvisUI
@@ -87,7 +128,10 @@ def smoke_test():
             renderer.close()
     except Exception as exc:
         gpu['reason'] = str(exc)
-    report = {'packaged_imports': 'passed', 'settings_window': 'passed', 'main_window': 'passed', 'desktop_settings_controls': 'passed',
+    import asyncio
+    mcp_status = asyncio.run(verify_packaged_mcp())
+    report = {'claude_settings': 'passed', 'mcp_local_protocol': mcp_status,
+              'claude_login': 'not_tested', 'packaged_imports': 'passed', 'settings_window': 'passed', 'main_window': 'passed', 'desktop_settings_controls': 'passed',
               'assets': 'passed', 'quick_menu': 'passed', 'sphere_switch': 'passed', 'fish_settings': 'passed', 'photo_dialog': 'passed', 'face_models_load': 'passed', 'search_cards': 'passed', 'cpu_fire_smoke': 'passed', 'gpu': gpu, 'live_audio_api': 'not_tested',
               'smart_home_hardware': 'not_tested'}
     (ROOT / 'smoke-test.json').write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding='utf-8')
