@@ -14,3 +14,6 @@
 | Correspondência facial local | Comparação visual local de rosto; não equivale a Windows Hello ou autenticação do sistema. |
 | Smoke test do pacote | Verificação executada pelo EXE compilado para importações, interface, recursos e protocolo MCP; não valida contas externas nem hardware real. |
 | Skill de engenharia | Instrução de trabalho para o agente que desenvolve o projeto, distinta de uma ferramenta MCP do JARVIS. |
+| Plano editorial | Semana iniciada na segunda-feira, com briefing e cartões de conteúdo persistidos localmente. |
+| Cartão de conteúdo | Ideia com canal, data editorial, gancho, roteiro, CTA e etapa de produção; publicação social é uma ação diferente. |
+| Publicação no Trello | Envio explícito de novos cartões ao quadro da conta configurada; não significa publicação em uma rede social. |

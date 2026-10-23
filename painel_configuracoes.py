@@ -38,7 +38,7 @@ class Panel(tk.Tk):
         for name in [
             "Geral","IA","Claude / MCP","Voz","Ativação","Visual","Wallpaper",
             "Localização","Casa Inteligente","Device Link","Memória",
-            "Plugins","Proatividade"
+            "Plugins","Conteúdo / Trello","Proatividade"
         ]:
             f = ttk.Frame(self.nb)
             self.nb.add(f, text=name)
@@ -56,6 +56,7 @@ class Panel(tk.Tk):
         self._build_device_link()
         self._build_memory()
         self._build_plugins()
+        self._build_content()
         self._build_proactive()
 
         bar = ttk.Frame(self)
@@ -114,14 +115,14 @@ class Panel(tk.Tk):
         self.brain_provider = tk.StringVar(value=cfg.get('brain_provider', 'claude_code'))
         self.claude_command = tk.StringVar(value=cfg.get('claude_command', 'claude'))
         self.claude_model = tk.StringVar(value=cfg.get('claude_model', 'sonnet'))
-        self.mcp_actions = tk.StringVar(value=', '.join(cfg.get('mcp_allowed_actions', ['system_status', 'recall_memory', 'web_search'])))
+        self.mcp_actions = tk.StringVar(value=', '.join(cfg.get('mcp_allowed_actions', ['system_status', 'recall_memory', 'web_search', 'content_planner'])))
         self.mcp_allowed_tools = tk.StringVar(value=', '.join(cfg.get('mcp_allowed_tools', [])))
         self.row(p, 'Cérebro', self.brain_provider, ['claude_code', 'gemini'])
         self.row(p, 'Executável Claude', self.claude_command)
         self.row(p, 'Modelo / alias', self.claude_model)
         self.row(p, 'Funções JARVIS autorizadas', self.mcp_actions)
         ttk.Label(p, text='Nomes separados por vírgulas. Adicionar uma função autoriza sua execução pelo Claude. '
-                  'Por padrão: status, memória e busca. Sem shell nativo do Claude.', wraplength=850).pack(anchor='w', padx=16)
+                  'Por padrão: status, memória, busca e planejamento local. Sem shell nativo do Claude.', wraplength=850).pack(anchor='w', padx=16)
         self.row(p, 'Ferramentas MCP autorizadas', self.mcp_allowed_tools)
         ttk.Label(p, text='Servidores MCP adicionais (JSON). Cadastre apenas servidores que deseja executar. '
                   'Autorize nomes exatos como mcp__github__get_me no campo acima. Sem autorização, a ferramenta será bloqueada.', wraplength=850).pack(anchor='w', padx=16, pady=(12, 4))
@@ -132,6 +133,26 @@ class Panel(tk.Tk):
         import webbrowser
         ttk.Button(links, text='INSTALAR / LOGIN CLAUDE', command=lambda: webbrowser.open('https://code.claude.com/docs/en/setup')).pack(side='left')
         ttk.Button(links, text='CATÁLOGO MCP', command=lambda: webbrowser.open('https://mcpservers.org/pt-BR/')).pack(side='left', padx=8)
+
+    def _build_content(self):
+        p=self.tabs['Conteúdo / Trello']
+        self.section(p, 'Central de conteúdo',
+            'Planeje sua semana, edite roteiros e envie novos cartões ao Trello. O quadro local funciona sem Trello. '
+            'Use o botão Central de conteúdo no desktop ou no menu rápido.')
+        cfg=load_json('api_keys.json',{})
+        self.trello_key=tk.StringVar(value=cfg.get('trello_api_key',''))
+        self.trello_token=tk.StringVar(value=cfg.get('trello_token',''))
+        self.trello_board=tk.StringVar(value=cfg.get('trello_board_id',''))
+        self.row(p,'Chave API Trello',self.trello_key,secret=True)
+        self.row(p,'Token Trello',self.trello_token,secret=True)
+        self.row(p,'ID do quadro (opcional)',self.trello_board)
+        ttk.Label(p,text='Deixe o ID vazio para criar um quadro privado por plano. '
+                  'O envio cria listas por dia e preserva cartões já enviados. Não publica em redes sociais.',wraplength=850).pack(anchor='w',padx=16,pady=12)
+        ttk.Label(p,text='Para a IA salvar planos, autorize content_planner em Claude / MCP. '
+                  'Para solicitar envio por voz, autorize também trello_content. O envio exige confirmação no HUD.',wraplength=850).pack(anchor='w',padx=16,pady=12)
+        import webbrowser
+        ttk.Button(p,text='COMO OBTER CHAVE E TOKEN',command=lambda:webbrowser.open(
+            'https://developer.atlassian.com/cloud/trello/guides/rest-api/authorization/')).pack(anchor='w',padx=16,pady=8)
 
     def _build_voice(self):
         p=self.tabs["Voz"]; self.section(p,"Voz e Áudio","10 perfis prontos para escolher.")
@@ -323,6 +344,9 @@ class Panel(tk.Tk):
         _profiles = load_json("voice_profiles.json",{}).get("profiles",{})
         _vp = _profiles.get(self.voice_profile.get(),{})
         a.update({
+            "trello_api_key":self.trello_key.get().strip(),
+            "trello_token":self.trello_token.get().strip(),
+            "trello_board_id":self.trello_board.get().strip(),
             "brain_provider":self.brain_provider.get(),
             "claude_command":self.claude_command.get().strip() or 'claude',
             "claude_model":self.claude_model.get().strip() or 'sonnet',

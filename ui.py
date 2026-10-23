@@ -3597,6 +3597,7 @@ class RemoteKeyOverlay(QWidget):
 class MainWindow(QMainWindow):
     _log_sig        = pyqtSignal(str)
     _state_sig      = pyqtSignal(str)
+    _content_plan_sig = pyqtSignal(str)
     _content_sig    = pyqtSignal(str, str)   # (title, text) — thread-safe content display
     _image_open_sig = pyqtSignal(str, str)  # (local image path, title)
     _reconfig_sig   = pyqtSignal()           # trigger setup overlay from any thread
@@ -3916,6 +3917,7 @@ class MainWindow(QMainWindow):
         self._metric_tmr.start(2000)
         self._update_metrics()
 
+        self._content_plan_sig.connect(self._open_content_workspace)
         self._log_sig.connect(self._log.append_log)
         self._log_sig.connect(self._update_particle_caption)
         self._state_sig.connect(self._apply_state)
@@ -5792,7 +5794,9 @@ class MainWindow(QMainWindow):
         audio.clicked.connect(self._open_audio_from_desktop)
         quick = QPushButton('☰ Menu rápido')
         quick.clicked.connect(self._open_quick_menu)
-        layout.addWidget(quick); layout.addWidget(settings); layout.addWidget(audio)
+        content = QPushButton('◈ Central de conteúdo')
+        content.clicked.connect(self._open_content_workspace)
+        layout.addWidget(content); layout.addWidget(quick); layout.addWidget(settings); layout.addWidget(audio)
         self._desktop_controls.adjustSize()
         screen = QApplication.primaryScreen().availableGeometry()
         self._desktop_controls.move(screen.right()-self._desktop_controls.width()-18,
@@ -5851,7 +5855,8 @@ class MainWindow(QMainWindow):
         sl.addWidget(apply); sl.addWidget(status); sl.addStretch()
         tabs.addTab(sphere, 'Esfera')
         shortcuts = QWidget(); al = QVBoxLayout(shortcuts)
-        for title, action in (('Áudio / microfone', self._open_audio_from_desktop),
+        for title, action in (('Central de conteúdo · referência', self._open_content_workspace),
+                              ('Áudio / microfone', self._open_audio_from_desktop),
                               ('Todos os ajustes', self._open_full_settings_panel)):
             button = QPushButton(title); button.clicked.connect(action); al.addWidget(button)
         profile = QPushButton('Foto e reconhecimento'); profile.clicked.connect(self._open_photo_profiles); al.addWidget(profile)
@@ -7686,6 +7691,24 @@ class MainWindow(QMainWindow):
         if self.on_text_command:
             threading.Thread(target=self.on_text_command, args=(txt,), daemon=True).start()
 
+    def _open_content_workspace(self, plan_id=None):
+        panel = getattr(self, '_content_workspace', None)
+        if panel is None:
+            from ui_components.content_workspace import ContentWorkspace
+            def command(value):
+                if self.on_text_command:
+                    self.on_text_command(value)
+            panel = ContentWorkspace(send_command=command,
+                state_source=lambda: (self.hud.state, self.hud._amp_disp),
+                open_settings=self._open_full_settings_panel, interrupt=self._do_interrupt,
+                mute=self._toggle_mute, open_weather=self._show_premium_panel, parent=self)
+            self._content_workspace = panel
+            self._log_sig.connect(panel.append_log)
+            QApplication.instance().aboutToQuit.connect(panel.shutdown)
+        if isinstance(plan_id, str) and plan_id:
+            panel.select_plan(plan_id)
+        panel.show(); panel.raise_(); panel.activateWindow()
+
     def _toggle_premium_panel(self):
         if self._premium_panel is not None and self._premium_panel.isVisible():
             self._premium_panel.hide()
@@ -7965,6 +7988,10 @@ class JarvisUI:
     def wait_for_api_key(self):
         while not self._win._ready:
             time.sleep(0.1)
+
+    def show_content_plan(self, plan_id: str):
+        """Open a saved editorial plan on the GUI thread."""
+        self._win._content_plan_sig.emit(plan_id)
 
     def show_content(self, title: str, text: str):
         """Thread-safe: envia conteúdo para o cartão contextual do JARVIS."""

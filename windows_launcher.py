@@ -49,6 +49,33 @@ async def verify_packaged_mcp():
     return 'passed'
 
 
+def verify_content_workspace(app):
+    """Open the packaged editorial panel with an isolated temporary database."""
+    import tempfile
+    import time
+    from PyQt6.QtWidgets import QLabel
+    from core.content_planner import ContentPlanner
+    from ui_components.content_workspace import ContentWorkspace
+    with tempfile.TemporaryDirectory(prefix='jarvis-content-smoke-') as folder:
+        planner = ContentPlanner(Path(folder) / 'content.sqlite3')
+        planner.create_plan('Validação do quadro', '2026-10-26', '',
+                            [{'day': 0, 'title': 'Cartão de validação', 'script': 'Roteiro salvo localmente.'}])
+        panel = ContentWorkspace(planner=planner)
+        panel.show(); panel.set_view(1)
+        try:
+            deadline = time.monotonic() + 5
+            while time.monotonic() < deadline:
+                app.processEvents()
+                if any(w.text() == 'Cartão de validação' for w in panel.findChildren(QLabel)):
+                    break
+                time.sleep(.01)
+            else:
+                raise AssertionError('Content workspace did not render its saved card')
+        finally:
+            panel.shutdown(); panel.close(); app.processEvents()
+    return 'passed'
+
+
 def smoke_test():
     """Exercise packaged imports, settings window, assets and the actual shader."""
     import json
@@ -65,6 +92,8 @@ def smoke_test():
     panel.update()
     assert panel.fish_voice_id.get() == '4ff2cc8f7c524b38a7fa110e4e12c72d'
     assert hasattr(panel, 'fish_key')
+    assert 'Conteúdo / Trello' in panel.tabs
+    assert hasattr(panel, 'trello_token')
     assert 'Claude / MCP' in panel.tabs
     assert panel.brain_provider.get() == 'claude_code'
     assert panel.claude_model.get() == 'sonnet'
@@ -128,9 +157,10 @@ def smoke_test():
             renderer.close()
     except Exception as exc:
         gpu['reason'] = str(exc)
+    content_status = verify_content_workspace(app)
     import asyncio
     mcp_status = asyncio.run(verify_packaged_mcp())
-    report = {'claude_settings': 'passed', 'mcp_local_protocol': mcp_status,
+    report = {'content_workspace': content_status, 'trello_live_account': 'not_tested', 'claude_settings': 'passed', 'mcp_local_protocol': mcp_status,
               'claude_login': 'not_tested', 'packaged_imports': 'passed', 'settings_window': 'passed', 'main_window': 'passed', 'desktop_settings_controls': 'passed',
               'assets': 'passed', 'quick_menu': 'passed', 'sphere_switch': 'passed', 'fish_settings': 'passed', 'photo_dialog': 'passed', 'face_models_load': 'passed', 'search_cards': 'passed', 'cpu_fire_smoke': 'passed', 'gpu': gpu, 'live_audio_api': 'not_tested',
               'smart_home_hardware': 'not_tested'}
