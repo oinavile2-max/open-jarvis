@@ -5796,7 +5796,9 @@ class MainWindow(QMainWindow):
         quick.clicked.connect(self._open_quick_menu)
         content = QPushButton('◈ Central de conteúdo')
         content.clicked.connect(self._open_content_workspace)
-        layout.addWidget(content); layout.addWidget(quick); layout.addWidget(settings); layout.addWidget(audio)
+        briefing = QPushButton('◈ Central de briefing')
+        briefing.clicked.connect(self._open_briefing)
+        layout.addWidget(briefing); layout.addWidget(content); layout.addWidget(quick); layout.addWidget(settings); layout.addWidget(audio)
         self._desktop_controls.adjustSize()
         screen = QApplication.primaryScreen().availableGeometry()
         self._desktop_controls.move(screen.right()-self._desktop_controls.width()-18,
@@ -5855,7 +5857,8 @@ class MainWindow(QMainWindow):
         sl.addWidget(apply); sl.addWidget(status); sl.addStretch()
         tabs.addTab(sphere, 'Esfera')
         shortcuts = QWidget(); al = QVBoxLayout(shortcuts)
-        for title, action in (('Central de conteúdo · referência', self._open_content_workspace),
+        for title, action in (('Central de briefing · notícias', self._open_briefing),
+                              ('Central de conteúdo · referência', self._open_content_workspace),
                               ('Áudio / microfone', self._open_audio_from_desktop),
                               ('Todos os ajustes', self._open_full_settings_panel)):
             button = QPushButton(title); button.clicked.connect(action); al.addWidget(button)
@@ -6075,6 +6078,10 @@ class MainWindow(QMainWindow):
         premium_btn.setStyleSheet(_BTN_STYLE_PRI)
         premium_btn.clicked.connect(self._toggle_premium_panel)
         lay.addWidget(premium_btn)
+        briefing_btn=QPushButton('◈  CENTRAL DE BRIEFING')
+        briefing_btn.setStyleSheet(_BTN_STYLE_PRI)
+        briefing_btn.clicked.connect(self._open_briefing)
+        lay.addWidget(briefing_btn)
 
         remote_btn = QPushButton("◉  CONTROLE REMOTO")
         remote_btn.setFixedHeight(30)
@@ -6439,9 +6446,26 @@ class MainWindow(QMainWindow):
 
         return w
 
+    def _open_briefing(self):
+        if getattr(self,'_briefing_window',None) is None:
+            from ui_components.briefing import BriefingWindow
+            def command(text):
+                if self.on_text_command:self.on_text_command(text)
+            self._briefing_window=BriefingWindow(self.hud,command,self._show_premium_panel,
+                self._open_photo_profiles,self._open_full_settings_panel,self)
+            QApplication.instance().aboutToQuit.connect(self._briefing_window.hide)
+            if getattr(self,'_last_briefing_content',None):
+                self._briefing_window.set_content(*self._last_briefing_content)
+        self._briefing_window.show();self._briefing_window.raise_();self._briefing_window.activateWindow()
+
     def _show_content(self, title: str, text: str):
         """Mostra respostas contextuais sem poluir o wallpaper."""
         import time as _time
+        self._last_briefing_content=(title,text)
+        briefing=getattr(self,'_briefing_window',None)
+        if briefing is not None:
+            briefing.set_content(title,text)
+            if briefing.isVisible():return
 
         if getattr(self, "_wallpaper_mode", False):
             self._show_wallpaper_card(title, text)

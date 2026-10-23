@@ -155,6 +155,7 @@ def _ddg_news(query: str, max_results: int = 8) -> list[dict]:
                     "snippet": r.get("body",   ""),
                     "url":     r.get("url",    ""),
                     "source":  r.get("source", ""),
+                    "image":   r.get("image", ""),
                 })
     except Exception as e:
         print(f"[WebSearch] ⚠️ DDG news() failed ({e}) — falling back to text search")
@@ -192,7 +193,9 @@ def _format_news(query: str, results: list[dict]) -> str:
         if r.get("snippet"):
             lines.append(f"   {r['snippet'][:140]}")
         if r.get("url"):
-            lines.append(f"   {r['url']}")
+            lines.append(f"   Source: {r['url']}")
+        if r.get("image"):
+            lines.append(f"Image: {r['image']}")
         lines.append("")
     return "\n".join(lines).strip()
 

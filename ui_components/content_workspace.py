@@ -48,8 +48,8 @@ def button(title, callback, primary=False):
 
 
 class Reactor(QWidget):
-    def __init__(self, state_source=None, parent=None):
-        super().__init__(parent);self.state_source=state_source;self.phase=0.
+    def __init__(self, state_source=None, parent=None, show_label=True):
+        super().__init__(parent);self.state_source=state_source;self.phase=0.;self.show_label=show_label
         self.setMinimumSize(230,230)
         self.timer=QTimer(self);self.timer.setInterval(40);self.timer.timeout.connect(self.tick)
     def showEvent(self,event):self.timer.start();super().showEvent(event)
@@ -78,6 +78,7 @@ class Reactor(QWidget):
         for index in range(72):
             a=math.radians(index*5);r=size*.53;r2=r+(6 if index%6==0 else 2)
             p.drawLine(QPointF(cx+math.cos(a)*r,cy+math.sin(a)*r),QPointF(cx+math.cos(a)*r2,cy+math.sin(a)*r2))
+        if not self.show_label:return
         p.setPen(color);font=QFont('Segoe UI',max(11,int(size/20)),QFont.Weight.DemiBold);font.setLetterSpacing(QFont.SpacingType.AbsoluteSpacing,2)
         p.setFont(font);p.drawText(rect,Qt.AlignmentFlag.AlignCenter,'J.A.R.V.I.S.')
         p.setFont(QFont('Segoe UI',9));p.setPen(QColor('#689bab'))
