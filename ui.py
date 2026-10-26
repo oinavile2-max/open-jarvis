@@ -3598,6 +3598,7 @@ class MainWindow(QMainWindow):
     _log_sig        = pyqtSignal(str)
     _state_sig      = pyqtSignal(str)
     _content_plan_sig = pyqtSignal(str)
+    _agent_workspace_sig = pyqtSignal(str)
     _content_sig    = pyqtSignal(str, str)   # (title, text) — thread-safe content display
     _image_open_sig = pyqtSignal(str, str)  # (local image path, title)
     _reconfig_sig   = pyqtSignal()           # trigger setup overlay from any thread
@@ -3918,6 +3919,7 @@ class MainWindow(QMainWindow):
         self._update_metrics()
 
         self._content_plan_sig.connect(self._open_content_workspace)
+        self._agent_workspace_sig.connect(self._open_agent_workspace)
         self._log_sig.connect(self._log.append_log)
         self._log_sig.connect(self._update_particle_caption)
         self._state_sig.connect(self._apply_state)
@@ -5857,7 +5859,8 @@ class MainWindow(QMainWindow):
         sl.addWidget(apply); sl.addWidget(status); sl.addStretch()
         tabs.addTab(sphere, 'Esfera')
         shortcuts = QWidget(); al = QVBoxLayout(shortcuts)
-        for title, action in (('Central de briefing · notícias', self._open_briefing),
+        for title, action in (('Central de agentes · programação', self._open_agent_workspace),
+                              ('Central de briefing · notícias', self._open_briefing),
                               ('Central de conteúdo · referência', self._open_content_workspace),
                               ('Áudio / microfone', self._open_audio_from_desktop),
                               ('Todos os ajustes', self._open_full_settings_panel)):
@@ -6445,6 +6448,14 @@ class MainWindow(QMainWindow):
         lay.addWidget(self._content_display)
 
         return w
+
+    def _open_agent_workspace(self, brief=''):
+        if getattr(self,'_agent_window',None) is None:
+            from ui_components.agent_workspace import AgentWindow
+            self._agent_window=AgentWindow(_read_full_config,self)
+            QApplication.instance().aboutToQuit.connect(self._agent_window.shutdown)
+        if isinstance(brief,str) and brief.strip():self._agent_window.set_brief(brief)
+        self._agent_window.show();self._agent_window.raise_();self._agent_window.activateWindow()
 
     def _open_briefing(self):
         if getattr(self,'_briefing_window',None) is None:
@@ -8012,6 +8023,9 @@ class JarvisUI:
     def wait_for_api_key(self):
         while not self._win._ready:
             time.sleep(0.1)
+
+    def show_agent_workspace(self, brief: str):
+        self._win._agent_workspace_sig.emit(brief)
 
     def show_content_plan(self, plan_id: str):
         """Open a saved editorial plan on the GUI thread."""

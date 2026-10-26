@@ -8,7 +8,7 @@ import tempfile
 from pathlib import Path
 from core.claude_brain import validate_servers
 
-DEFAULT_ALLOWED = ('system_status', 'recall_memory', 'web_search', 'content_planner')
+DEFAULT_ALLOWED = ('system_status', 'recall_memory', 'web_search', 'content_planner', 'agent_workspace')
 
 
 class BearerAuth:

@@ -115,7 +115,7 @@ class Panel(tk.Tk):
         self.brain_provider = tk.StringVar(value=cfg.get('brain_provider', 'claude_code'))
         self.claude_command = tk.StringVar(value=cfg.get('claude_command', 'claude'))
         self.claude_model = tk.StringVar(value=cfg.get('claude_model', 'sonnet'))
-        self.mcp_actions = tk.StringVar(value=', '.join(cfg.get('mcp_allowed_actions', ['system_status', 'recall_memory', 'web_search', 'content_planner'])))
+        self.mcp_actions = tk.StringVar(value=', '.join(cfg.get('mcp_allowed_actions', ['system_status', 'recall_memory', 'web_search', 'content_planner', 'agent_workspace'])))
         self.mcp_allowed_tools = tk.StringVar(value=', '.join(cfg.get('mcp_allowed_tools', [])))
         self.row(p, 'Cérebro', self.brain_provider, ['claude_code', 'gemini'])
         self.row(p, 'Executável Claude', self.claude_command)
